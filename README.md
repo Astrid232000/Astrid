@@ -1,46 +1,162 @@
-# 🍽️ Astra Restaurant
+# ZawadieAI+
 
-**Fresh meals. Made with care. Delivered with love.**
+**ZawadieAI+ Sales Qualifier & Sales Assistant** is an AI-powered sales platform designed to help businesses turn leads into qualified sales opportunities.
 
-A mobile-first ordering app for Astra Restaurant — New Katudza, Dzaleka Refugee Camp, Dowa, Malawi. Browse the menu, build a cart, choose pickup or delivery, schedule a time, and pay in advance — all in a few taps.
+It combines AI-powered lead qualification with practical sales assistance, helping sales teams understand leads, prioritize opportunities, and prepare better follow-ups.
 
-🔗 [REQUIREMENT.md](REQUIREMENT.md) · [CLAUDE.md](CLAUDE.md)
+## Purpose
 
-## Quick Start
+The platform is being developed as part of Zawadie's transition toward **AI + Human augmented business services**, where artificial intelligence improves productivity while people provide judgment, creativity, customer understanding, and accountability.
+
+## Who It Is For
+
+The platform is designed for businesses that want to improve their lead qualification and sales processes.
+
+It is being designed as a reusable product rather than a tool for only one company.
+
+## Core Capabilities
+
+* Lead analysis and qualification
+* Lead scoring
+* Buying-signal detection
+* Sales recommendations
+* Personalized response generation
+* Follow-up assistance
+* Lead history and insights
+
+## Vision
+
+Develop a scalable AI + Human sales solution that Zawadie can eventually offer to businesses as part of its AI-Sales Operations services.
+
+## Development
+
+Built as a modern web application using Visual Studio Code and AI-powered technologies.
+
+---
+
+## Tech Stack
+
+- **Next.js 16** (App Router, TypeScript) — UI + API routes in one app
+- **PostgreSQL + Prisma 7** — data layer, tenant-scoped by `companyId`
+- **Auth.js (NextAuth) v5** — credentials + JWT sessions, role-based access
+  (`OWNER` / `ADMIN` / `SALES_REP`)
+- **OpenAI** — structured (tool-call, schema-validated) output for
+  lead qualification and sales assistance, never free-form text
+- **Zod** — input validation on every API route and AI output
+- **Vitest** — service-level tests (tenant isolation, etc.)
+
+## Getting Started
 
 ```bash
 npm install
-npm run dev       # http://localhost:5173
-npm run build     # production build → dist/
+cp .env.example .env
 ```
 
-## Stack
+Fill in `.env`:
 
-React · Vite · Tailwind CSS · React Router — no backend required; cart and orders persist in `localStorage`.
+- `DATABASE_URL` — a Postgres connection string. For a normal setup, run
+  Postgres however you normally would (a local install, Docker, or a
+  managed provider) and point this at it.
+  Note: `npx prisma dev --detach` (Prisma's own throwaway local server) is
+  tempting for a no-install option, but it proved unreliable in
+  development here — connections dropped under normal use ("Connection
+  terminated unexpectedly"). If you don't have Postgres and can't use
+  Docker/admin rights either, a real portable Postgres (e.g. the
+  EnterpriseDB Windows zip — unzip, `initdb`, `pg_ctl start`, no installer)
+  is the more stable no-install fallback.
+- `AUTH_SECRET` — generate with `npx auth secret`.
+- `OPENAI_API_KEY` — required for the AI qualification/assistant
+  features (get one at platform.openai.com). Everything else in the app
+  works without it; those two endpoints return a clear error if it's
+  missing.
 
-## Highlights
+Then:
 
-- 🛒 Full ordering flow: **Browse → Cart → Pickup/Delivery → Time → Payment → Confirm**
-- ⏰ Enforces Astra's 2-hour minimum lead time on every order
-- 💳 Advance payment via Airtel Money / TNM Mpamba — never marks an order "paid" without real confirmation
-- 📱 WhatsApp support, bulk-order and custom/off-menu order enquiries built in
-- 📤 Placing an order opens WhatsApp with the full order details ready to send to Astra — that's how the restaurant is notified, no backend needed
-- 🎨 Astra brand palette (orange · purple · gold · apple green) used tastefully, not all at once
+```bash
+npx prisma migrate dev   # create the schema
+npm run dev               # http://localhost:3000
+```
 
-## Configure the Business
+Sign up creates a new company and its first `OWNER` user. From Settings
+(Owner/Admin only) you can add products, qualification criteria, a sales
+process, communication style, and invite teammates as `ADMIN` or
+`SALES_REP`.
 
-One file each — no hunting through components:
+## Scripts
 
-| What | Where |
-|---|---|
-| Delivery fee, lead time, WhatsApp/call numbers, payment methods, today's kitchen banner | [`src/data/config.js`](src/data/config.js) |
-| Menu items, prices, categories | [`src/data/menu.js`](src/data/menu.js) |
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm start` | Run a production build |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest (needs `DATABASE_URL` reachable) |
+| `npx prisma migrate dev` | Apply schema changes locally |
+| `npx prisma studio` | Browse the database |
 
-## Real Photos
+## Architecture Notes
 
-Most dishes already use a real, openly-licensed photo (see [`public/images/menu/CREDITS.md`](public/images/menu/CREDITS.md) for sources); anything without one renders a designed placeholder. Drop a URL into an item's `image` field in `menu.js` to swap in Astra's own photography and it's used automatically — see [`DishImage.jsx`](src/components/DishImage.jsx).
+- **Multi-tenancy**: every tenant-owned table carries `companyId`; every
+  service function takes `companyId` from the authenticated session (never
+  from the request body) and scopes its Prisma queries with it. See
+  [src/lib/services/tenantIsolation.test.ts](./src/lib/services/tenantIsolation.test.ts)
+  for the regression test.
+- **Human + AI separation**: `LeadFact` (human/import-sourced) is a
+  separate table from `LeadAnalysis`/`SalesRecommendation` (AI-sourced).
+  AI records are append-only/versioned, start `PENDING`, and require an
+  explicit human Approve/Reject before they're treated as final anywhere.
+  The UI renders facts and AI output in visibly distinct panels.
+- **Anti-hallucination**: AI calls go through
+  [src/lib/ai/structuredCall.ts](./src/lib/ai/structuredCall.ts), which
+  forces the model's response through a Zod-validated tool call — never
+  freeform text — and retries once on a schema mismatch before surfacing a
+  clear error. The qualification prompt requires citing the specific
+  `LeadFact` IDs behind a score, and the service layer drops any cited
+  fact/product ID that doesn't actually belong to that lead/company rather
+  than trusting the model's IDs blindly.
+- **Lead enrichment** (`LeadEnrichment` model, "Research this lead" on the
+  Facts panel): for when all you have on a lead is the bare minimum —
+  runs the same real, cited web search as contact research, but scoped to
+  general company intelligence (industry, size, recent news/signals)
+  instead of who-to-contact. Findings sit in their own PENDING record,
+  never written to `LeadFact` directly; approving copies every finding
+  into `LeadFact` in one step (`source: AI_RESEARCH`, with its citations
+  in a `sources` field rendered as `[1] [2]` links) — that's the one
+  moment an AI finding becomes an actual fact the qualification engine can
+  cite. Rejecting discards them.
+- **Contact research** (`ContactResearch` model, "Who to Contact" panel):
+  finds/verifies the right person at a lead's company using a *real, cited*
+  web search ([src/lib/ai/webSearch.ts](./src/lib/ai/webSearch.ts), OpenAI
+  Responses API's `web_search` tool) — never a plain model guess, since a
+  contact name has no company-provided fact to ground it in. It's a
+  two-step "search then structure" call: step 1 searches freely and
+  answers in prose with citations, step 2 takes only that prose + those
+  citations as evidence and reformats it into a reviewable record,
+  instructed to copy names/titles exactly rather than embellish them
+  (verified live: an initial version expanded "Dave Davison" from a real
+  source into the fabricated "David D. Davison" — fixed by making the
+  no-embellishment rule explicit in both steps). Sources are re-filtered
+  against the URLs the search actually returned before being stored, same
+  "never trust an AI-returned identifier blindly" rule as citedFactIds. If
+  the search finds nothing solid, it reports `UNKNOWN`/`LOW` confidence
+  with `recommendedName: null` rather than inventing someone.
+- Code structure under `src/lib` and `src/app/api` mirrors the design
+  directly (`services/`, `ai/`, `auth/`, one route file per REST-ish
+  endpoint). See [REQUIREMENT.md](./REQUIREMENT.md) for the product spec
+  this implements and [CLAUDE.md](./CLAUDE.md) for the engineering
+  standards this project is held to.
 
-## Contact
+## Deployment
 
-📍 New Katudza, Dzaleka Refugee Camp, Dowa, Malawi
-📱 +265 997 73 88 06 · +265 994 85 3121
+```bash
+docker build -t zawadie-app .
+docker run -p 3000:3000 \
+  -e DATABASE_URL=... \
+  -e AUTH_SECRET=... \
+  -e OPENAI_API_KEY=... \
+  zawadie-app
+```
+
+Run `npx prisma migrate deploy` against the target database before
+starting the container (not baked into the image, so migrations stay under
+your CI/CD's control).
