@@ -1,70 +1,247 @@
-# CLAUDE.md
+# CLAUDE.md — ASTRA RESTAURANT
 
-Guidance for Claude (or any developer) working in this repository.
+## Project Mission
 
-## Claude Instructions
+Build a beautiful, production-quality food ordering web application for **Astra Restaurant** in Dzaleka Refugee Camp, Malawi.
 
-Act as the lead developer for this project.
+This is a real restaurant ordering experience, not a demonstration website.
 
-- Use only HTML, CSS, and vanilla JavaScript. Do not install or require external libraries, frameworks, packages, or extensions.
-- Keep the implementation simple, modular, responsive, and easy to maintain.
-- Prioritize visual communication over text and make the interface usable for people with limited reading ability.
-- Build incrementally, test each change, and preserve working features.
+The most important goals are:
 
-The one standing exception is the Google Fonts `<link>` in `index.html` — it's a typography stylesheet, not code, and the page falls back to system fonts if it can't load. Don't add any other external request, script, or package.
+1. Make the food look extremely appetizing.
+2. Make ordering extremely simple.
+3. Make the brand memorable.
+4. Encourage customers to order.
+5. Clearly communicate pickup, delivery, ordering time and advance payment.
+6. Make the application work exceptionally well on mobile phones.
 
-## Project Overview
+---
 
-**SAFE OR DANGER!** is a 2D visual decision game that teaches children and young people to recognize everyday safe and dangerous situations. Full requirements live in [REQUIREMENT.md](REQUIREMENT.md) — read it before making product decisions.
+## Design Philosophy
 
-Players see a picture-first "scene" (large emoji + a short caption, also read aloud), have a few seconds to choose **SAFE** or **DANGER**, and get simple visual (and spoken) feedback. Difficulty rises across 6 age-phase levels spanning roughly ages 4 through 20+, selectable individually or played as one continuous journey; the game tracks lives, score, streaks, and current level, and ends with a summary screen.
+Think like a combination of:
 
-## Project Structure
+* A professional restaurant designer
+* A mobile UX designer
+* A conversion-focused product designer
+* A modern African food brand
 
-```
-REQUIREMENT.md   Product requirements (source of truth for "what to build")
-CLAUDE.md        This file — how to work in the repo
-index.html       The entire game: HTML + CSS + JS in one file
-```
+Do not create a generic template.
 
-There is no build step, package manager, or dependency file — and there should not be one. To run the game, open `index.html` directly in a browser.
+The application should have its own Astra identity.
 
-## How to Test a Change
+Use:
 
-There's no test suite; verify manually, in a browser, every time:
+* Orange
+* Purple
+* White
+* Gold
+* Apple Green
 
-1. Open (or reload) `index.html`.
-2. Click **Let's Play!** and play at least one full round on a few of the 6 levels (or enough to trigger a level-up transition), and separately try the start-screen level grid to jump straight into a single level.
-3. Deliberately answer wrong at least once to confirm: a life is lost, the feedback panel and progress dots update, and the round penalty is applied. Answer correctly 3 times in a row to confirm the streak "hype" banner, fanfare, and bonus points/life-restore trigger correctly.
-4. Confirm both end states work: finishing all rounds ("Great Game!") and losing all 3 lives ("Out of Lives!"); from the end screen, confirm "🔀 Choose a Level" opens the lightweight level picker (no rules recap).
-5. Toggle light/dark theme, the sound mute button, and the 🗣️ read-aloud toggle; reload and confirm all three preferences persisted.
-6. Resize the window / check mobile width — layout is single-column and must not overflow horizontally.
+Do not overuse the colors simultaneously. White should provide breathing room, while orange and purple should create strong brand recognition. Gold and green should be accents.
 
-## Architecture (inside `index.html`)
+Use beautiful typography, rounded cards, tasteful shadows, subtle animations and strong spacing.
 
-- **Design tokens:** CSS custom properties on `:root` (light palette by default), overridden under `@media (prefers-color-scheme: dark)` and `:root[data-theme="dark"]` for the manual toggle. Any new color must be added as a token in both places.
-- **Script:** one `(function(){ "use strict"; ... })()` IIFE, no globals leaked besides the browser's own.
-- **Config constants:** `LIVES_MAX`, `ROUNDS_PER_LEVEL` (10 — 5 danger + 5 safe, sampled per level played), `READ_WORDS_PER_SEC` (drives the per-scene reading-time timer calc).
-- **Content data:**
-  - `CATEGORIES` — icon/label per situation category (traffic, fire, water, strangers, animals, home, poison, internet, outdoor, body, social, money, vehicle, work, substances — 15 total).
-  - `TIERS` — per-level (age-phase) config: `level`, `name`, `emoji`, `ageRange`, `answerBuffer`/`minTime`/`maxTime` (feed `computeRoundTime()`, not a flat time limit), `base` points, intro `tip`. Six phases: Tiny Explorers (4–6) → Safety Explorer (7–9) → Safety Champion (10–12) → Safety Navigator (13–15) → Safety Strategist (16–18) → Safety Pro (19–20+).
-  - `CONTENT` — the scenario bank: `{ id, level, category, isDanger, visual, caption, feedback }`. 180 scenarios total, 30 per level (15 danger + 15 safe).
-  - `CHEER_OPENERS` / `TRY_AGAIN_OPENERS` / `STREAK_HYPE_WORDS` — randomized phrase pools for correct/wrong/streak-milestone feedback text (both on-screen and spoken), so wording doesn't repeat.
-- **State:** `freshState(opts)` builds a fresh `order` array by sampling a balanced danger/safe subset per level from `CONTENT` and shuffling; `opts.onlyLevel` restricts it to a single level for the start-screen/end-screen level picker. `levelOffsets` maps each level number to its start index in `order` (needed because single-level sessions don't start at index 0 of a full 6-level run).
-- **Render/flow functions:** `renderHeader`, `renderDots`, `renderLevelIntro`, `renderRound`, `decide` (scoring + feedback + streak hype), `advance`, `endGame`, `fillLevelGrid` (populates both the start-screen and end-screen level pickers), `launchGame`/`newGame` (start a session, optionally scoped to one level).
-- **Sound effects:** a lazily-created, shared `AudioContext` and a small oscillator-based `beep()` helper generate all SFX (correct/wrong/level-up/tick/streak-fanfare) — there are no audio files. Toggled via the header's sound-effects button and remembered in `localStorage`.
-- **Background music:** a looping, amapiano-flavored instrumental groove (log-drum bassline, soft kick, shaker via a generated noise buffer, jazzy Gm7 chord stabs, sparse lead hook) — no audio files, no vocals, all scheduled ahead of time each loop with Web Audio oscillators/noise through its own dedicated, quiet `musicGain` node (`startMusic`/`stopMusic`/`scheduleMusicLoop`). Independent of the SFX toggle above, so muting one never affects the other. Starts on **Let's Play!**, loops continuously, and is toggled via the header's 🎵 button (also remembered in `localStorage`).
-- **Read-aloud narration:** the Web Speech API (`speechSynthesis`) — no audio files, no external service. Deliberately terse by design (kids complained an earlier version talked too much): it speaks exactly two things — the scene caption + SAFE/DANGER prompt (`prompt` mood, so a non-reader can answer), and, only on a correct answer, one short joyful word (`celebrate` mood, or `streak` mood with a bigger word on a 3-streak milestone). Nothing is spoken for level intros, wrong/timed-out answers, or the feedback sentence — all of that stays fully visible on screen, it just isn't read aloud. `pickBestVoice()` selects the liveliest available English voice (re-run on `onvoiceschanged`); `speak(text, mood)` picks rate/pitch from `VOICE_MOODS`. A "🔊 Hear it again" button replays the last-spoken line via `replaySpeech()`. Toggled via the header's 🗣️ button and remembered in `localStorage`, independent of the SFX/music toggles.
+---
 
-## Conventions to Preserve
+## UX Principles
 
-- Keep the game in a single `index.html` unless a change genuinely requires more files — if it ever does, keep additions to plain `<script src>` / `<link>` includes, never a bundler or package.json.
-- New scenarios go into `CONTENT` following the existing shape; if a scenario needs a new category, add it to `CATEGORIES` too.
-- Feedback text stays to one short, plain sentence per scenario. This game's audience has limited reading ability — default to icons, color, and shape before words for any new UI.
-- Reuse the existing light/dark token pattern for any new CSS; don't hardcode colors outside `:root`.
-- Don't add a build step, transpiler, or npm dependency, ever — that's a hard constraint from the Claude Instructions above, not a style preference.
+The customer should be able to understand the application immediately.
 
-## Workflow
+Prioritize:
 
-- Build incrementally: make one focused change, then actually open/reload `index.html` and click through the affected flow (see "How to Test a Change") before starting the next change.
-- Preserve working features — lives, streak bonuses, sound, music, read-aloud narration, theme toggle, keyboard shortcuts, the level/dot progress indicator, and the level-select pickers should still all work after any change, even ones that don't touch them directly.
+**Food → Price → Add → Cart → Delivery/Pickup → Time → Payment → Confirmation**
+
+Never make customers search for the main ordering button.
+
+The primary CTA should always be obvious.
+
+Use language that is friendly, confident and simple.
+
+Avoid technical language.
+
+---
+
+## Food Photography
+
+Food imagery is extremely important.
+
+Use high-quality, appetizing images that match the actual menu item.
+
+Never use an obviously unrelated image simply to fill space.
+
+Structure the code so real Astra Restaurant photographs can easily replace temporary images later.
+
+---
+
+## Ordering Rules
+
+Astra customers should order at least **2 hours in advance**.
+
+The interface must enforce this rule when selecting a time.
+
+Dzaleka delivery should initially cost:
+
+**MWK 2,000**
+
+Keep the delivery fee configurable.
+
+Customers should be encouraged to pay in advance.
+
+Never claim that a payment has been successfully received unless there is a real payment confirmation.
+
+---
+
+## Important Restaurant Data
+
+Restaurant:
+Astra Restaurant
+
+Location:
+New Katudza, Dzaleka Refugee Camp, Dowa, Malawi
+
+WhatsApp/Phone:
++265 997 73 88 06
++265 994 85 3121
+
+Delivery:
+Within Dzaleka
+
+Delivery fee:
+MWK 2,000 initially
+
+---
+
+## Menu Data
+
+Keep menu information in a structured data source rather than hard-coding it repeatedly throughout the interface.
+
+Menu:
+
+Chicken & Rice — MWK 6,500
+Nsima with Chicken — MWK 5,500
+Nsima with Beef — MWK 6,000
+Fried Rice with Chicken — MWK 7,500
+Sausages & Chips — MWK 5,500
+Egusi — MWK 9,500
+Spaghetti Meal — MWK 4,500
+Special Mixed Plate — MWK 7,500
+Special Salad — MWK 3,500
+Tea — MWK 1,000
+
+Extras:
+
+Extra Chicken — MWK 2,500
+Extra Beef — MWK 3,000
+Extra Nsima — MWK 1,000
+Salad — MWK 1,500
+
+---
+
+## Development Rules
+
+Before writing large amounts of code:
+
+1. Understand the complete requirements.
+2. Create a clean project structure.
+3. Build reusable components.
+4. Keep business data separate from UI components.
+5. Make the application responsive from the beginning.
+6. Test every major customer flow.
+7. Do not create unnecessary complexity.
+
+Do not duplicate information across multiple files when a reusable data structure can be used.
+
+Do not create fake functionality and present it as real functionality.
+
+If a feature requires an external service that is not yet connected, create a clean placeholder architecture for it.
+
+---
+
+## Checkout
+
+Checkout must include:
+
+* Customer name
+* Phone/WhatsApp
+* Pickup or delivery
+* Delivery location when delivery is selected
+* Date
+* Time
+* Payment method
+* Order summary
+* Delivery fee
+* Final total
+
+Prevent checkout if required information is missing.
+
+Prevent invalid ordering times.
+
+---
+
+## Payment
+
+Supported payment methods:
+
+* Airtel Money
+* TNM Mpamba
+
+If cash on delivery is included, treat it as a configurable option because Astra's preferred model is advance payment.
+
+Payment instructions must be easy to understand.
+
+Design payment integration so a real payment provider can be connected later.
+
+---
+
+## Order Status
+
+Use clear states:
+
+Received
+Payment Verification
+Preparing
+Ready
+Out for Delivery
+Completed
+
+Do not expose complicated technical states to customers.
+
+---
+
+## Mobile First
+
+Design for a customer holding a phone.
+
+Buttons should be easy to tap.
+
+The cart should be easy to access.
+
+Checkout should not require unnecessary scrolling.
+
+Use sticky or easily accessible ordering controls where appropriate.
+
+---
+
+## Quality Standard
+
+Before considering the application complete, check:
+
+* Is the homepage visually attractive?
+* Are the food images prominent?
+* Can a customer find the menu immediately?
+* Can a customer order in less than a few minutes?
+* Is the total price always clear?
+* Is the delivery fee clear?
+* Is the 2-hour rule enforced?
+* Is advance payment clearly communicated?
+* Does the application work on mobile?
+* Are buttons and forms easy to use?
+* Are empty/error/loading states handled?
+* Does the application feel like Astra Restaurant rather than a generic template?
+
+Build with polish.
+
+Do not stop at "it works."
+
+The final result should feel like something a real restaurant could confidently show customers.
