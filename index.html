@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAFE OR DANGER!</title>
+<meta name="description" content="A fast, colorful picture game that teaches kids to spot safe and dangerous everyday situations." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF6E6;
+    --bg-blob-1: #BFE9FF;
+    --bg-blob-2: #FFE28A;
+    --bg-blob-3: #FFC9E3;
+    --surface:#FFFFFF;
+    --surface-2:#FFF1D6;
+    --ink:#2B2140;
+    --muted:#786F92;
+    --line: rgba(43,33,64,0.12);
+    --accent:#6C5CE7;
+    --accent-ink:#FFFFFF;
+    --safe:#22C55E;
+    --safe-bg: rgba(34,197,94,0.14);
+    --danger:#EF4444;
+    --danger-bg: rgba(239,68,68,0.14);
+    --warn:#F59E0B;
+    --shadow: 0 2px 4px rgba(43,33,64,.06), 0 14px 30px -14px rgba(43,33,64,.28);
+    --radius: 20px;
+    --font-display:'Baloo 2', 'Segoe UI', sans-serif;
+    --font-body:'Nunito', -apple-system, Segoe UI, sans-serif;
+    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16122A;
+      --bg-blob-1: #3B82F6;
+      --bg-blob-2: #FB923C;
+      --bg-blob-3: #F472B6;
+      --surface:#221D33;
+      --surface-2:#2A2340;
+      --ink:#F3EFFF;
+      --muted:#A99FC4;
+      --line: rgba(243,239,255,0.13);
+      --accent:#A98BFF;
+      --accent-ink:#1A1430;
+      --safe:#4ADE80;
+      --safe-bg: rgba(74,222,128,0.16);
+      --danger:#FF6B6B;
+      --danger-bg: rgba(255,107,107,0.16);
+      --warn:#FBBF24;
+      --shadow: 0 2px 4px rgba(0,0,0,.4), 0 16px 34px -16px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16122A;
+    --bg-blob-1: #3B82F6;
+    --bg-blob-2: #FB923C;
+    --bg-blob-3: #F472B6;
+    --surface:#221D33;
+    --surface-2:#2A2340;
+    --ink:#F3EFFF;
+    --muted:#A99FC4;
+    --line: rgba(243,239,255,0.13);
+    --accent:#A98BFF;
+    --accent-ink:#1A1430;
+    --safe:#4ADE80;
+    --safe-bg: rgba(74,222,128,0.16);
+    --danger:#FF6B6B;
+    --danger-bg: rgba(255,107,107,0.16);
+    --warn:#FBBF24;
+    --shadow: 0 2px 4px rgba(0,0,0,.4), 0 16px 34px -16px rgba(0,0,0,.65);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(480px 340px at 8% -6%, color-mix(in srgb, var(--bg-blob-1) 75%, transparent), transparent 60%),
+      radial-gradient(520px 360px at 100% 8%, color-mix(in srgb, var(--bg-blob-2) 65%, transparent), transparent 60%),
+      radial-gradient(460px 380px at 50% 110%, color-mix(in srgb, var(--bg-blob-3) 55%, transparent), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height:1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection{ background: color-mix(in srgb, var(--accent) 35%, transparent); }
+  button{ font-family: inherit; }
+  .num{ font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .wrap{ max-width: 680px; margin:0 auto; padding: 18px 16px 56px; }
+
+  header.topbar{
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    gap:12px; margin-bottom:14px;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand .mark{ font-size:1.7rem; }
+  h1{
+    font-family: var(--font-display); font-weight:800;
+    font-size: clamp(1.3rem, 5vw, 1.7rem); margin:0; letter-spacing:-0.01em;
+  }
+  .tagline{ font-size:.74rem; color:var(--muted); font-weight:600; }
+  .headstats{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:center; }
+  .chip{
+    display:flex; flex-direction:column; align-items:center;
+    background: var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:5px 11px; box-shadow: var(--shadow); min-width:52px;
+  }
+  .chip .l{ font-size:.58rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700; }
+  .chip .v{ font-family: var(--font-mono); font-weight:700; font-size:1rem; }
+  .chip .v.hearts{ font-size:.95rem; letter-spacing:1px; font-family: var(--font-body); }
+  .iconbtn{
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    border-radius:999px; min-width:38px; height:38px; padding:0 8px; font-size:1.05rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:1px; box-shadow: var(--shadow);
+  }
+  .iconbtn:hover{ border-color: var(--accent); }
+
+  .levelbar{
+    display:flex; flex-direction:column; gap:8px; align-items:center;
+    margin-bottom:14px;
+  }
+  .lvl-pill{
+    font-family: var(--font-display); font-weight:700; font-size:.86rem;
+    background: var(--surface); border:1px solid var(--line); border-radius:999px;
+    padding:6px 16px; box-shadow: var(--shadow); color:var(--accent);
+  }
+  .lvl-pill .num{ color:var(--muted); font-weight:600; font-size:.75rem; margin-left:6px; font-family: var(--font-body); }
+  .dots{ display:flex; gap:5px; flex-wrap:wrap; justify-content:center; max-width:320px; }
+  .dot{ width:9px; height:9px; border-radius:50%; background:var(--surface-2); border:1px solid var(--line); }
+  .dot.correct{ background: var(--safe); border-color: var(--safe); }
+  .dot.wrong{ background: var(--danger); border-color: var(--danger); }
+  .dot.current{ transform: scale(1.35); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); background: var(--accent); border-color: var(--accent); }
+
+  .card{
+    background: var(--surface); border:1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding:22px 20px 24px; position:relative; text-align:center;
+  }
+
+  .timer-ring{
+    width:96px; height:96px; border-radius:50%; margin:0 auto 14px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .timer-ring::before{
+    content:''; position:absolute; inset:7px; border-radius:50%; background:var(--surface);
+  }
+  .timer-ring .secs{ position:relative; z-index:1; font-family:var(--font-mono); font-weight:700; font-size:1.5rem; }
+
+  .cat-pill{
+    display:inline-flex; align-items:center; gap:5px; font-size:.7rem; font-weight:700;
+    padding:4px 12px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--muted); margin-bottom:14px;
+  }
+
+  .scene{ animation: popIn .4s ease; }
+  @keyframes popIn{
+    0%{ opacity:0; transform:scale(.85) translateY(8px); }
+    60%{ opacity:1; transform:scale(1.04) translateY(-2px); }
+    100%{ transform:scale(1) translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){ .scene{ animation:none; } }
+  .visual{ font-size: clamp(3.6rem, 15vw, 4.6rem); line-height:1.1; margin-bottom:12px; }
+  .caption{
+    font-family: var(--font-display); font-weight:700; font-size: clamp(1.15rem, 4.4vw, 1.4rem);
+    margin:0 0 12px; text-wrap:balance; color:var(--ink);
+  }
+  .replay-btn{
+    display:inline-flex; align-items:center; gap:6px; font-family: var(--font-display); font-weight:700;
+    font-size:.78rem; background: var(--surface-2); border:1px solid var(--line); color:var(--accent);
+    border-radius:999px; padding:7px 16px; cursor:pointer; margin:0 0 20px; box-shadow: var(--shadow);
+  }
+  .replay-btn:hover{ border-color: var(--accent); }
+  .replay-btn:active{ transform: scale(.97); }
+  .replay-btn.speaking{ animation: pulseSpeak 1s ease-in-out infinite; }
+  @keyframes pulseSpeak{ 0%,100%{ opacity:1; } 50%{ opacity:.6; } }
+  @media (prefers-reduced-motion: reduce){ .replay-btn.speaking{ animation:none; } }
+
+  .decide-row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .decide-btn{
+    flex:1 1 130px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    border-radius:16px; padding:16px 12px; font-family: var(--font-display); font-size:1.15rem; font-weight:700;
+    cursor:pointer; border:3px solid transparent; color:#fff;
+    transition: transform .1s ease, filter .15s ease;
+    box-shadow: var(--shadow);
+  }
+  .decide-btn:hover{ transform: translateY(-2px) scale(1.02); }
+  .decide-btn:active{ transform: scale(.97); }
+  .decide-btn.safe{ background: var(--safe); }
+  .decide-btn.danger{ background: var(--danger); }
+  .decide-btn:disabled{ opacity:.4; cursor:default; transform:none; }
+  .decide-btn .k{ font-size:.62rem; font-weight:700; opacity:.85; font-family: var(--font-body); }
+
+  .resolution{ margin-top:6px; }
+  .feedback-icon{ font-size:3.6rem; margin-bottom:6px; }
+  .feedback-icon.correct{ animation: bounceIn .5s ease; }
+  .feedback-icon.wrong{ animation: shake .5s ease; }
+  @keyframes bounceIn{ 0%{ transform:scale(0); } 55%{ transform:scale(1.3); } 100%{ transform:scale(1); } }
+  @keyframes shake{ 0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-8px); } 40%{ transform:translateX(8px); } 60%{ transform:translateX(-6px); } 80%{ transform:translateX(6px); } }
+  @media (prefers-reduced-motion: reduce){ .feedback-icon.correct, .feedback-icon.wrong{ animation:none; } }
+
+  .verdict-banner{
+    display:inline-block; font-family: var(--font-display); font-weight:800; font-size:1.15rem;
+    padding:6px 18px; border-radius:999px; margin-bottom:12px;
+  }
+  .verdict-banner.correct{ background: var(--safe-bg); color: var(--safe); }
+  .verdict-banner.wrong{ background: var(--danger-bg); color: var(--danger); }
+
+  .tag-row{ display:flex; justify-content:center; gap:8px; margin-bottom:12px; }
+  .tag{
+    font-family: var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.07em;
+    padding:3px 10px; border-radius:6px; font-weight:700;
+  }
+  .tag.safe{ color: var(--safe); background: var(--safe-bg); }
+  .tag.danger{ color: var(--danger); background: var(--danger-bg); }
+
+  .feedback-text{ font-size:.98rem; color:var(--ink); margin:0 0 20px; max-width:420px; margin-left:auto; margin-right:auto; }
+  .delta-row{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:18px; }
+  .delta{
+    font-family: var(--font-mono); font-size:.82rem; font-weight:700; padding:5px 12px;
+    border-radius:8px; background: var(--surface-2); border:1px solid var(--line);
+  }
+  .delta.pos{ color: var(--safe); }
+  .delta.neg{ color: var(--danger); }
+  .bonus-line{ font-size:.82rem; color: var(--accent); font-weight:700; margin:-8px 0 16px; }
+  .streak-hype{
+    font-family: var(--font-display); font-weight:800; font-size: clamp(1.05rem, 4vw, 1.25rem);
+    color: var(--warn); margin:0 0 12px; text-wrap:balance; animation: bounceIn .55s ease;
+  }
+  @media (prefers-reduced-motion: reduce){ .streak-hype{ animation:none; } }
+
+  .next-btn{
+    background: var(--accent); color: var(--accent-ink); border:none;
+    border-radius:14px; padding:13px 30px; font-family: var(--font-display); font-size:1.02rem; font-weight:700;
+    cursor:pointer; box-shadow: var(--shadow);
+  }
+  .next-btn:hover{ filter:brightness(1.08); }
+
+  .level-intro .em{ font-size:3rem; display:block; margin-bottom:8px; }
+  .level-intro h3{ font-family: var(--font-display); font-size:1.5rem; margin:0 0 8px; }
+  .age-badge{
+    display:inline-block; font-family: var(--font-mono); font-size:.7rem; font-weight:700;
+    color: var(--accent); background: var(--surface-2); border:1px solid var(--line);
+    border-radius:999px; padding:3px 12px; margin-bottom:12px;
+  }
+  .level-intro p{ color:var(--muted); font-size:.94rem; max-width:380px; margin:0 auto 18px; }
+  .level-intro .meta{ font-family: var(--font-mono); font-size:.74rem; color: var(--muted); margin-bottom:18px; }
+
+  .hint{ text-align:center; font-size:.72rem; color:var(--muted); margin-top:14px; }
+  .hint kbd{ font-family:var(--font-mono); border:1px solid var(--line); border-radius:4px; padding:1px 5px; background: var(--surface); }
+
+  .overlay{
+    position:fixed; inset:0; background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(3px); display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:50;
+  }
+  .overlay[hidden]{ display:none; }
+  .modal{
+    max-width:480px; width:100%; background:var(--surface); border:1px solid var(--line);
+    border-radius:22px; box-shadow: var(--shadow); padding:32px 28px; max-height:88vh; overflow-y:auto;
+    text-align:center;
+  }
+  .modal .mark-big{ font-size:2.4rem; margin-bottom:6px; display:block; }
+  .modal h2.title{
+    font-family: var(--font-display); font-size: clamp(1.5rem, 7vw, 2rem); font-weight:800;
+    margin:0 0 8px; text-wrap:balance;
+  }
+  .modal p{ color:var(--muted); font-size:.92rem; }
+  .rules{ margin:16px 0 22px; padding:0; list-style:none; display:flex; flex-direction:column; gap:10px; text-align:left; }
+  .rules li{ font-size:.86rem; display:flex; gap:10px; align-items:flex-start; }
+  .rules li .ico{ flex:0 0 auto; font-size:1.1rem; }
+  .btn-primary{
+    background: var(--accent); color: var(--accent-ink); border:none; border-radius:14px;
+    padding:14px 26px; font-family: var(--font-display); font-size:1.05rem; font-weight:700; cursor:pointer;
+    box-shadow: var(--shadow);
+  }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-secondary{
+    background: var(--surface-2); color: var(--ink); border:1px solid var(--line); border-radius:14px;
+    padding:11px 22px; font-family: var(--font-display); font-size:.92rem; font-weight:700; cursor:pointer;
+  }
+  .btn-secondary:hover{ border-color: var(--accent); }
+
+  .level-select-label{ font-size:.76rem; color:var(--muted); font-weight:700; margin:18px 0 8px; }
+  .level-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; }
+  .level-card{
+    display:flex; flex-direction:column; align-items:center; gap:1px;
+    background: var(--surface-2); border:1px solid var(--line); border-radius:14px;
+    padding:10px 4px; cursor:pointer; text-align:center; box-shadow: var(--shadow);
+    font-family: var(--font-body); color:var(--ink);
+  }
+  .level-card:hover{ border-color: var(--accent); transform: translateY(-2px); }
+  .level-card:active{ transform: scale(.97); }
+  .level-card .em{ font-size:1.5rem; }
+  .level-card .nm{ font-family: var(--font-display); font-weight:700; font-size:.7rem; margin-top:3px; line-height:1.2; }
+  .level-card .age{ font-size:.6rem; color:var(--muted); font-weight:700; }
+
+  .score-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin:18px 0 8px; text-align:left; }
+  .score-tile{ background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  .score-tile .l{ font-size:.62rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; }
+  .score-tile .v{ font-family: var(--font-mono); font-size:1.05rem; font-weight:700; margin-top:2px; }
+
+  .grade-badge{ margin:10px 0 4px; }
+  .grade-badge .g{ font-size:3rem; line-height:1; display:block; margin-bottom:4px; }
+  .grade-badge .title{ font-family: var(--font-display); font-weight:800; font-size:1.3rem; color:var(--accent); }
+  .grade-badge .score{ font-family: var(--font-mono); font-size:.9rem; color:var(--muted); display:block; margin-top:2px; }
+
+  footer.credits{ text-align:center; font-size:.7rem; color:var(--muted); margin-top:22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">🛡️</span>
+      <div>
+        <h1>SAFE OR DANGER!</h1>
+        <div class="tagline">Spot it fast, stay safe!</div>
+      </div>
+    </div>
+    <div class="headstats">
+      <div class="chip"><span class="l">Score</span><span class="v num" id="statScore">0</span></div>
+      <div class="chip"><span class="l">Level</span><span class="v" id="statLevel">–</span></div>
+      <div class="chip"><span class="l">Lives</span><span class="v hearts" id="statLives">❤️❤️❤️</span></div>
+      <button class="iconbtn" id="musicToggle" type="button" title="Toggle background music">🎵🔊</button>
+      <button class="iconbtn" id="soundToggle" type="button" title="Toggle sound effects">🔊</button>
+      <button class="iconbtn" id="narrateToggle" type="button" title="Toggle read-aloud narration">🗣️🔊</button>
+      <button class="iconbtn" id="themeToggle" type="button" title="Toggle theme">🌓</button>
+    </div>
+  </header>
+
+  <div class="levelbar">
+    <div class="lvl-pill" id="lvlLabel">Level 1: Tiny Explorers <span class="num">Scene 1 / 60</span></div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <main>
+    <article class="card" id="card" aria-live="polite"></article>
+    <div class="hint">Click <strong>SAFE</strong> or <strong>DANGER</strong> — or press <kbd>S</kbd> / <kbd>D</kbd>. Every 3-streak scores bonus points, every 5-streak wins back a life!</div>
+  </main>
+
+  <footer class="credits">A picture game for practicing everyday safety — every scene here is make-believe.</footer>
+</div>
+
+<!-- Start overlay -->
+<div class="overlay" id="startOverlay">
+  <div class="modal">
+    <span class="mark-big">🛡️</span>
+    <h2 class="title">SAFE OR DANGER!</h2>
+    <p>A picture pops up showing an everyday moment. You decide, fast: is it SAFE, or is it DANGER?</p>
+    <ul class="rules">
+      <li><span class="ico">⏱️</span><span>You'll only have a few seconds for each scene — trust your instincts!</span></li>
+      <li><span class="ico">✅</span><span>Correct AND fast answers earn the most points. A hot streak scores bonus points too!</span></li>
+      <li><span class="ico">❤️</span><span>You have 3 lives. A wrong answer costs one — but a 5-streak wins one back.</span></li>
+      <li><span class="ico">🎯</span><span>6 levels that grow with you, ages 4 all the way to 20+ — traffic, water, strangers, the internet, driving, money, and more. It gets trickier as you go!</span></li>
+      <li><span class="ico">🗣️</span><span>Every scene and every answer is read out loud too — you don't have to know how to read to play!</span></li>
+    </ul>
+    <button class="btn-primary" id="btnStart" type="button">Let's Play! →</button>
+    <div class="level-select-label">or jump straight to a level:</div>
+    <div class="level-grid" id="levelGrid"></div>
+  </div>
+</div>
+
+<!-- Level picker overlay (no rules recap — for jumping to a level after a game's already been played) -->
+<div class="overlay" id="pickerOverlay" hidden>
+  <div class="modal">
+    <span class="mark-big">🎯</span>
+    <h2 class="title">Choose a Level</h2>
+    <div class="level-grid" id="levelGridPicker"></div>
+    <div style="margin-top:16px;">
+      <button class="btn-primary" id="btnPlayFullJourney" type="button">▶️ Play Full Journey</button>
+    </div>
+  </div>
+</div>
+
+<!-- End overlay -->
+<div class="overlay" id="endOverlay" hidden>
+  <div class="modal">
+    <span class="mark-big" id="endMark">🌟</span>
+    <h2 class="title" id="endTitle">Great Game!</h2>
+    <p id="endSubtitle"></p>
+    <div class="grade-badge">
+      <span class="g" id="endEmoji">🌟</span>
+      <span class="title" id="endGradeTitle">Safety Superstar!</span>
+      <span class="score num" id="endScore">2100 pts</span>
+    </div>
+    <div class="score-grid" id="endGrid"></div>
+    <p id="endFeedback" style="margin-top:10px;"></p>
+    <div style="margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn-primary" id="btnRestart" type="button">Play Again →</button>
+      <button class="btn-secondary" id="btnChooseLevel" type="button">🔀 Choose a Level</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Theme toggle ---------------- */
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('themeToggle');
+  function applyStoredTheme(){
+    try{
+      var t = localStorage.getItem('safeordanger-theme');
+      if(t === 'dark' || t === 'light') root.setAttribute('data-theme', t);
+    }catch(e){}
+  }
+  applyStoredTheme();
+  themeBtn.addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    var next;
+    if(current === 'dark') next = 'light';
+    else if(current === 'light') next = 'dark';
+    else{
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      next = prefersDark ? 'light' : 'dark';
+    }
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('safeordanger-theme', next); }catch(e){}
+  });
+
+  /* ---------------- Sound ---------------- */
+  var soundOn = true;
+  try{ var storedSound = localStorage.getItem('safeordanger-sound'); if(storedSound === 'off') soundOn = false; }catch(e){}
+  var soundBtn = document.getElementById('soundToggle');
+  function renderSoundBtn(){ soundBtn.textContent = soundOn ? '🔊' : '🔇'; }
+  renderSoundBtn();
+  soundBtn.addEventListener('click', function(){
+    soundOn = !soundOn;
+    try{ localStorage.setItem('safeordanger-sound', soundOn ? 'on' : 'off'); }catch(e){}
+    renderSoundBtn();
+  });
+
+  var audioCtx = null;
+  function ensureAudio(){
+    // Shared by sound effects and background music, so either can run independently of the other.
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }
+    if(audioCtx && audioCtx.state === 'suspended'){ try{ audioCtx.resume(); }catch(e){} }
+    return audioCtx;
+  }
+  function beep(freq, start, dur, type, peak){
+    if(!soundOn || !audioCtx) return;
+    try{
+      var t0 = audioCtx.currentTime + start;
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(peak || 0.15, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }catch(e){}
+  }
+  function playCorrect(){ ensureAudio(); beep(523.25, 0, 0.14, 'sine'); beep(783.99, 0.12, 0.2, 'sine'); beep(1046.5, 0.24, 0.22, 'sine', 0.12); }
+  function playWrong(){ ensureAudio(); beep(220, 0, 0.18, 'sawtooth', 0.11); beep(164.81, 0.14, 0.24, 'sawtooth', 0.11); }
+  function playLevelUp(){ ensureAudio(); beep(523.25, 0, 0.12, 'triangle'); beep(659.25, 0.11, 0.12, 'triangle'); beep(783.99, 0.22, 0.22, 'triangle'); }
+  function playTick(){ ensureAudio(); beep(880, 0, 0.07, 'square', 0.06); }
+  function playStreak(){
+    // A bigger, five-note fanfare layered on top of the normal correct chime — reserved for
+    // every 3-in-a-row streak milestone, so it's unmistakably a bigger deal.
+    ensureAudio();
+    beep(659.25, 0, 0.12, 'triangle', 0.14); beep(783.99, 0.1, 0.12, 'triangle', 0.14);
+    beep(987.77, 0.2, 0.12, 'triangle', 0.14); beep(1174.66, 0.3, 0.16, 'triangle', 0.15);
+    beep(1567.98, 0.44, 0.3, 'sine', 0.13);
+  }
+
+  /* ---------------- Background music ---------------- */
+  // An amapiano-flavored instrumental groove synthesized entirely in-browser (no audio
+  // files, no vocals — that needs a real recording or voice-synthesis engine, neither of
+  // which this project has): a log-drum bassline, a soft kick, a shaker pulse, jazzy Gm7
+  // chord stabs, and a sparse lead hook, all mixed through one quiet gain node so it never
+  // competes with the SFX above.
+  var MUSIC_VOLUME = 0.13; // audible groove, still quieter than the SFX chimes
+  var MUSIC_BPM = 112; // amapiano's usual mid-tempo groove
+  var MUSIC_STEP = (60 / MUSIC_BPM) / 4; // sixteenth-note duration, seconds
+  var MUSIC_LOOP_STEPS = 32; // two bars of sixteenth notes
+
+  var MUSIC_KICK_STEPS = [0, 10, 16, 26]; // sparse, syncopated — not four-on-the-floor
+  var MUSIC_LOGDRUM = [ // the genre's signature: a pitched, gliding low percussive bass
+    { step:2,  freq:98.00  }, { step:6,  freq:98.00  }, { step:9,  freq:130.81 }, { step:14, freq:98.00  },
+    { step:18, freq:98.00  }, { step:22, freq:98.00  }, { step:25, freq:130.81 }, { step:30, freq:98.00  }
+  ];
+  var MUSIC_CHORD = [196.00, 233.08, 293.66, 349.23]; // G minor 7 — soulful, jazzy stab
+  var MUSIC_CHORD_STEPS = [0, 16];
+  var MUSIC_HOOK = [ // sparse descending lead phrase, once every 2 bars — leaves room to breathe
+    { step:4,  freq:587.33 }, { step:12, freq:523.25 }, { step:20, freq:466.16 }, { step:28, freq:392.00 }
+  ];
+
+  var musicOn = true;
+  try{ var storedMusic = localStorage.getItem('safeordanger-music'); if(storedMusic === 'off') musicOn = false; }catch(e){}
+  var musicBtn = document.getElementById('musicToggle');
+  var musicGain = null;
+  var musicTimer = null;
+  var noiseBuffer = null;
+
+  function renderMusicBtn(){ musicBtn.textContent = musicOn ? '🎵🔊' : '🎵🔇'; }
+  renderMusicBtn();
+
+  function ensureMusicGain(){
+    if(!audioCtx) return null;
+    if(!musicGain){
+      musicGain = audioCtx.createGain();
+      musicGain.gain.value = 0;
+      musicGain.connect(audioCtx.destination);
+    }
+    return musicGain;
+  }
+  function ensureNoiseBuffer(){
+    // A short burst of tapered white noise, reused for every shaker hit.
+    if(!audioCtx) return null;
+    if(!noiseBuffer){
+      var len = Math.floor(audioCtx.sampleRate * 0.06);
+      noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      var data = noiseBuffer.getChannelData(0);
+      for(var i = 0; i < len; i++){ data[i] = (Math.random() * 2 - 1) * (1 - i / len); }
+    }
+    return noiseBuffer;
+  }
+
+  function scheduleKick(t0, g){
+    var osc = audioCtx.createOscillator();
+    var ng = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t0);
+    osc.frequency.exponentialRampToValueAtTime(45, t0 + 0.12);
+    ng.gain.setValueAtTime(0.9, t0);
+    ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+    osc.connect(ng); ng.connect(g);
+    osc.start(t0); osc.stop(t0 + 0.24);
+  }
+  function scheduleLogDrum(t0, freq, g){
+    var osc = audioCtx.createOscillator();
+    var ng = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq * 1.9, t0);
+    osc.frequency.exponentialRampToValueAtTime(freq, t0 + 0.11);
+    ng.gain.setValueAtTime(0.5, t0);
+    ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.28);
+    osc.connect(ng); ng.connect(g);
+    osc.start(t0); osc.stop(t0 + 0.3);
+  }
+  function scheduleShaker(t0, g){
+    var buf = ensureNoiseBuffer();
+    if(!buf) return;
+    var src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    var hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 6000;
+    var ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.35, t0);
+    ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+    src.connect(hp); hp.connect(ng); ng.connect(g);
+    src.start(t0); src.stop(t0 + 0.06);
+  }
+  function scheduleChord(t0, dur, g){
+    MUSIC_CHORD.forEach(function(freq){
+      var osc = audioCtx.createOscillator();
+      var ng = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      ng.gain.setValueAtTime(0, t0);
+      ng.gain.linearRampToValueAtTime(0.10, t0 + 0.3);
+      ng.gain.setValueAtTime(0.10, t0 + dur - 0.3);
+      ng.gain.linearRampToValueAtTime(0, t0 + dur);
+      osc.connect(ng); ng.connect(g);
+      osc.start(t0); osc.stop(t0 + dur + 0.05);
+    });
+  }
+  function scheduleHook(t0, freq, g){
+    var osc = audioCtx.createOscillator();
+    var ng = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    ng.gain.setValueAtTime(0, t0);
+    ng.gain.linearRampToValueAtTime(0.22, t0 + 0.05);
+    ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+    osc.connect(ng); ng.connect(g);
+    osc.start(t0); osc.stop(t0 + 0.6);
+  }
+
+  function scheduleMusicLoop(){
+    if(!musicOn || !audioCtx) return;
+    var g = ensureMusicGain();
+    if(!g) return;
+    try{
+      var startAt = audioCtx.currentTime + 0.05;
+      MUSIC_KICK_STEPS.forEach(function(step){ scheduleKick(startAt + step * MUSIC_STEP, g); });
+      MUSIC_LOGDRUM.forEach(function(hit){ scheduleLogDrum(startAt + hit.step * MUSIC_STEP, hit.freq, g); });
+      for(var i = 1; i < MUSIC_LOOP_STEPS; i += 2){ scheduleShaker(startAt + i * MUSIC_STEP, g); }
+      var chordDur = MUSIC_STEP * 16 * 0.92; // just under one bar
+      MUSIC_CHORD_STEPS.forEach(function(step){ scheduleChord(startAt + step * MUSIC_STEP, chordDur, g); });
+      MUSIC_HOOK.forEach(function(hit){ scheduleHook(startAt + hit.step * MUSIC_STEP, hit.freq, g); });
+      var loopLen = MUSIC_LOOP_STEPS * MUSIC_STEP;
+      musicTimer = setTimeout(scheduleMusicLoop, loopLen * 1000);
+    }catch(e){}
+  }
+
+  function startMusic(){
+    if(!musicOn || musicTimer) return;
+    ensureAudio();
+    if(!audioCtx) return;
+    var g = ensureMusicGain();
+    g.gain.cancelScheduledValues(audioCtx.currentTime);
+    g.gain.setValueAtTime(g.gain.value, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(MUSIC_VOLUME, audioCtx.currentTime + 0.5);
+    scheduleMusicLoop();
+  }
+  function stopMusic(){
+    if(musicTimer){ clearTimeout(musicTimer); musicTimer = null; }
+    if(musicGain && audioCtx){
+      musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      musicGain.gain.setValueAtTime(musicGain.gain.value, audioCtx.currentTime);
+      musicGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+    }
+  }
+
+  musicBtn.addEventListener('click', function(){
+    musicOn = !musicOn;
+    try{ localStorage.setItem('safeordanger-music', musicOn ? 'on' : 'off'); }catch(e){}
+    renderMusicBtn();
+    if(!el.startOverlay.hidden) return; // game hasn't started yet — just remember the preference
+    if(musicOn) startMusic(); else stopMusic();
+  });
+
+  /* ---------------- Narration (read-aloud text-to-speech) ---------------- */
+  // Uses the browser's built-in Web Speech API (speechSynthesis) — no audio files, no
+  // external service. Reads every scene caption, the safe/danger prompt, and the feedback
+  // sentence out loud, so a child who can't read yet can still play (and start connecting
+  // the spoken words to the printed ones on screen).
+  var speechOk = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+  var narrationOn = true;
+  try{ var storedNarration = localStorage.getItem('safeordanger-narration'); if(storedNarration === 'off') narrationOn = false; }catch(e){}
+  var narrateBtn = document.getElementById('narrateToggle');
+  function renderNarrateBtn(){ narrateBtn.textContent = narrationOn ? '🗣️🔊' : '🗣️🔇'; }
+  if(!speechOk){ narrateBtn.disabled = true; narrateBtn.title = 'Read-aloud is not supported in this browser'; narrateBtn.style.opacity = '.4'; }
+  renderNarrateBtn();
+  narrateBtn.addEventListener('click', function(){
+    narrationOn = !narrationOn;
+    try{ localStorage.setItem('safeordanger-narration', narrationOn ? 'on' : 'off'); }catch(e){}
+    renderNarrateBtn();
+    if(!narrationOn && speechOk){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+  });
+
+  // Pick the liveliest-sounding voice available so the narrator sounds warm and fun rather
+  // than flat/robotic. Browsers load voices asynchronously, so this re-runs on
+  // onvoiceschanged and whenever we're about to speak.
+  var selectedVoice = null;
+  var FAVORITE_VOICE_NAMES = /female|zira|samantha|victoria|jenny|aria|natural|karen|moira|tessa|google us english|google uk english female/i;
+  function pickBestVoice(){
+    if(!speechOk) return;
+    try{
+      var voices = window.speechSynthesis.getVoices();
+      if(!voices || !voices.length) return;
+      var enVoices = voices.filter(function(v){ return /^en/i.test(v.lang); });
+      var pool = enVoices.length ? enVoices : voices;
+      var favorite = pool.filter(function(v){ return FAVORITE_VOICE_NAMES.test(v.name); })[0];
+      selectedVoice = favorite || pool[0];
+    }catch(e){}
+  }
+  if(speechOk){
+    pickBestVoice();
+    try{ window.speechSynthesis.onvoiceschanged = pickBestVoice; }catch(e){}
+  }
+
+  // Different moods speak at different rate/pitch so the narrator sounds like it's actually
+  // reacting: calm and clear while reading a scene, bright and excited when celebrating a
+  // correct answer, warm and gentle when encouraging a wrong one.
+  var VOICE_MOODS = {
+    prompt:    { rate:0.94, pitch:1.05 }, // reading the scene prompt
+    celebrate: { rate:1.08, pitch:1.28 }, // short correct-answer cheer
+    streak:    { rate:1.14, pitch:1.38 }  // biggest energy — reserved for streak milestones
+  };
+  var replayText = ''; // whatever the "Hear it again" button should re-speak right now
+  var replayMood = 'prompt';
+  function markSpeaking(isSpeaking){
+    var btn = document.getElementById('btnReplay');
+    if(btn) btn.classList.toggle('speaking', isSpeaking);
+  }
+  function speakNow(text, mood){
+    if(!speechOk) return;
+    try{
+      window.speechSynthesis.cancel(); // don't let utterances overlap/queue
+      pickBestVoice();
+      var u = new SpeechSynthesisUtterance(text);
+      var preset = VOICE_MOODS[mood] || VOICE_MOODS.prompt;
+      u.rate = preset.rate; u.pitch = preset.pitch;
+      if(selectedVoice) u.voice = selectedVoice;
+      u.onstart = function(){ markSpeaking(true); };
+      u.onend = function(){ markSpeaking(false); };
+      u.onerror = function(){ markSpeaking(false); };
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function speak(text, mood){
+    replayText = text;
+    replayMood = mood || 'prompt';
+    if(!narrationOn) return;
+    speakNow(text, replayMood);
+  }
+  function replaySpeech(){
+    if(!replayText) return;
+    speakNow(replayText, replayMood);
+  }
+
+  /* ---------------- Config ---------------- */
+  var LIVES_MAX = 3;
+  var ROUNDS_PER_LEVEL = 10; // 5 danger + 5 safe, sampled fresh each game from a 30-scenario pool per level
+
+  var CATEGORIES = {
+    traffic:    { icon:'🚦', label:'Traffic' },
+    fire:       { icon:'🔥', label:'Fire & Heat' },
+    water:      { icon:'🌊', label:'Water' },
+    strangers:  { icon:'🧑', label:'Strangers' },
+    animals:    { icon:'🐾', label:'Animals' },
+    home:       { icon:'🏠', label:'Home Safety' },
+    poison:     { icon:'☠️', label:'Poison & Medicine' },
+    internet:   { icon:'💻', label:'Internet Safety' },
+    outdoor:    { icon:'🛝', label:'Playground' },
+    body:       { icon:'🙋', label:'Body Safety' },
+    social:     { icon:'🧑‍🤝‍🧑', label:'Friends & People' },
+    money:      { icon:'💰', label:'Money & Scams' },
+    vehicle:    { icon:'🚗', label:'Driving & Roads' },
+    work:       { icon:'💼', label:'Work & Independence' },
+    substances: { icon:'🍺', label:'Alcohol & Drugs' }
+  };
+
+  // Per-scene time limit is NOT a fixed number — it's computed per question (see
+  // computeRoundTime below) as: time to read/hear the caption + a fixed "answerBuffer" of
+  // extra seconds just for picking SAFE or DANGER. That keeps long captions from getting cut
+  // off while still ramping up pressure across levels via a shrinking buffer and cap.
+  var READ_WORDS_PER_SEC = 2.2; // slow, clear pace — matches the read-aloud narration speed
+  // Six phases so the same game grows up with a player, roughly age 4 through 20+ — the last
+  // phase (Safety Pro) is designed to be replayed indefinitely once someone's past 20.
+  var TIERS = [
+    { level:1, name:'Tiny Explorers', emoji:'🌱', ageRange:'4–6', answerBuffer:5, minTime:7, maxTime:16, base:100,
+      tip:`Big, clear situations to get you warmed up. Trust your first instinct!` },
+    { level:2, name:'Safety Explorer', emoji:'🧭', ageRange:'7–9', answerBuffer:4, minTime:6, maxTime:14, base:150,
+      tip:`A little trickier, a little faster. Look for who's watching and what's missing.` },
+    { level:3, name:'Safety Champion', emoji:'🏆', ageRange:'10–12', answerBuffer:3, minTime:5, maxTime:12, base:220,
+      tip:`The sharpest scenes yet, with barely any time to think. You've got this!` },
+    { level:4, name:'Safety Navigator', emoji:'🧑‍🤝‍🧑', ageRange:'13–15', answerBuffer:4, minTime:6, maxTime:15, base:280,
+      tip:`Bigger-kid stuff: online "friends," peer pressure, and always knowing who to tell.` },
+    { level:5, name:'Safety Strategist', emoji:'🚗', ageRange:'16–18', answerBuffer:4, minTime:6, maxTime:15, base:340,
+      tip:`Driving, first jobs, dating — real teen choices with real consequences.` },
+    { level:6, name:'Safety Pro', emoji:'🎓', ageRange:'19–20+', answerBuffer:4, minTime:6, maxTime:15, base:400,
+      tip:`Independent-life smarts: money, renting, work, and looking out for yourself. Keep playing here as long as you like!` }
+  ];
+
+  // A pool of upbeat, varied openers so celebrating a correct answer never feels robotic or
+  // repetitive — one is picked at random each time, both for the on-screen banner and the
+  // spoken feedback.
+  var CHEER_OPENERS = [
+    '🎉 Amazing!', '🙌 Woohoo!', '⭐ Fantastic!', '😄 Awesome job!',
+    '🥳 Yes! Nailed it!', '👏 Great instinct!', '✨ Super smart!', '😆 Ha ha, you got it!'
+  ];
+  var TRY_AGAIN_OPENERS = ['Almost!', 'So close!', 'Nice try!', 'Good guess!', 'Not quite!'];
+  // The biggest words in the game — saved specifically for every 3-in-a-row streak, so
+  // getting three right in a row always feels like a huge deal.
+  var STREAK_HYPE_WORDS = [
+    'INCREDIBLE!', 'PHENOMENAL!', 'OUTSTANDING!', 'SPECTACULAR!',
+    'UNSTOPPABLE!', 'BRILLIANT!', 'MAGNIFICENT!', 'LEGENDARY!'
+  ];
+  // The narrator only ever speaks two things: the scene (so a non-reader can answer) and — on
+  // a correct answer — one short, joyful word. No long sentences, no reading the feedback text
+  // out loud, no talking on a level intro or a wrong answer.
+  var SPOKEN_PRAISE = ['Wow!', 'Great!', 'Yes!', 'Awesome!', 'Nice job!', 'Super!', 'Well done!'];
+  function pickRandom(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  /* ---------------- Content bank ---------------- */
+  var CONTENT = [
+    // ================= LEVEL 1 =================
+    { id:'l1-d1', level:1, category:'traffic', isDanger:true,
+      visual:`🏃💨🚗`, caption:`Running across the road without looking`,
+      feedback:`Always stop, look both ways, and wait for a safe gap before crossing.` },
+    { id:'l1-d2', level:1, category:'fire', isDanger:true,
+      visual:`🍳🔥✋`, caption:`Touching a hot, steaming pot on the stove`,
+      feedback:`Hot stoves can burn you — always ask a grown-up for help near the stove.` },
+    { id:'l1-d3', level:1, category:'water', isDanger:true,
+      visual:`🏊‍♂️🌊🚫`, caption:`Swimming alone in deep water with nobody watching`,
+      feedback:`Never swim alone — always have an adult or lifeguard watching.` },
+    { id:'l1-d4', level:1, category:'strangers', isDanger:true,
+      visual:`🚗🧑‍🦱❓`, caption:`A stranger asks you to get in their car`,
+      feedback:`Never get in a car with someone you don't know — tell a trusted grown-up right away.` },
+    { id:'l1-d5', level:1, category:'poison', isDanger:true,
+      visual:`☠️🧴`, caption:`Drinking from a bottle with a poison warning symbol`,
+      feedback:`Never taste or drink anything with a warning symbol — it can be very dangerous.` },
+    { id:'l1-d6', level:1, category:'animals', isDanger:true,
+      visual:`🐕😠`, caption:`Walking right up to a growling dog you don't know`,
+      feedback:`A growling dog is warning you to stay away — always ask the owner first.` },
+    { id:'l1-d7', level:1, category:'home', isDanger:true,
+      visual:`🪜🪟⬆️`, caption:`Climbing out onto a window ledge to reach a toy`,
+      feedback:`Never climb out of windows — ask a grown-up to help you reach things.` },
+    { id:'l1-d8', level:1, category:'body', isDanger:true,
+      visual:`🙅‍♀️🤚❓`, caption:`Someone touches you in a way that feels wrong`,
+      feedback:`Your body is yours — say no and tell a trusted grown-up right away.` },
+    { id:'l1-d9', level:1, category:'outdoor', isDanger:true,
+      visual:`🛝⬆️😨`, caption:`Standing on top of the playground slide instead of sliding down`,
+      feedback:`Playground equipment is safest used the way it was made for — feet first, seated!` },
+    { id:'l1-d10', level:1, category:'animals', isDanger:true,
+      visual:`🐝🤚`, caption:`Swatting at a buzzing bee flying near you`,
+      feedback:`Stay still and calm around bees — swatting can make them sting.` },
+    { id:'l1-d11', level:1, category:'traffic', isDanger:true,
+      visual:`⚽🛣️🚗`, caption:`Chasing a ball that rolled into the street`,
+      feedback:`Never run into the street — always stop and ask a grown-up to help get the ball.` },
+    { id:'l1-d12', level:1, category:'water', isDanger:true,
+      visual:`🏊🧸➡️`, caption:`Leaning over the edge of the pool to grab a floating toy`,
+      feedback:`Never lean over pool edges alone — ask a grown-up to help you reach it.` },
+    { id:'l1-d13', level:1, category:'fire', isDanger:true,
+      visual:`🔥🕯️🤏`, caption:`Playing with a lighter you found on the table`,
+      feedback:`Lighters and matches are not toys — give them straight to a grown-up.` },
+    { id:'l1-d14', level:1, category:'poison', isDanger:true,
+      visual:`💊🍬❓`, caption:`Eating little colorful pills you found on the floor`,
+      feedback:`Pills are not candy — never eat anything you find without asking a grown-up first.` },
+    { id:'l1-d15', level:1, category:'strangers', isDanger:true,
+      visual:`🚪🧑‍🦱🔔`, caption:`Opening the front door for someone you don't recognize`,
+      feedback:`Never open the door for a stranger — always get a grown-up first.` },
+
+    { id:'l1-s1', level:1, category:'traffic', isDanger:false,
+      visual:`🚦🟢🚶`, caption:`Crossing at the crosswalk when the light turns green`,
+      feedback:`Crosswalks and green lights help you cross safely — nice work!` },
+    { id:'l1-s2', level:1, category:'fire', isDanger:false,
+      visual:`🎂🕯️🧑`, caption:`Watching a grown-up light the candles on a cake`,
+      feedback:`It's safe to watch a grown-up handle fire — just don't touch it yourself.` },
+    { id:'l1-s3', level:1, category:'water', isDanger:false,
+      visual:`🏊🛟👀`, caption:`Swimming in the pool while the lifeguard is watching`,
+      feedback:`Swimming where a lifeguard can see you is a smart, safe choice.` },
+    { id:'l1-s4', level:1, category:'traffic', isDanger:false,
+      visual:`🚲🪖✅`, caption:`Wearing a helmet while riding your bike`,
+      feedback:`Helmets protect your head — always buckle up before you ride!` },
+    { id:'l1-s5', level:1, category:'strangers', isDanger:false,
+      visual:`🛒👨‍👩‍👧`, caption:`Staying close to your parent while shopping`,
+      feedback:`Staying near a trusted grown-up in busy places keeps you safe.` },
+    { id:'l1-s6', level:1, category:'animals', isDanger:false,
+      visual:`🐶🙋❓`, caption:`Asking the owner before petting their dog`,
+      feedback:`Always ask first — it's safe, friendly, and polite!` },
+    { id:'l1-s7', level:1, category:'home', isDanger:false,
+      visual:`🪑👣✅`, caption:`Using a step-stool instead of climbing on a chair`,
+      feedback:`Step-stools are made for reaching safely — smart choice!` },
+    { id:'l1-s8', level:1, category:'body', isDanger:false,
+      visual:`🙅‍♂️🗣️👨‍👩‍👧`, caption:`Saying "no" and telling a parent when a hug feels uncomfortable`,
+      feedback:`You always get to say no to touches that don't feel right — telling a grown-up is exactly right.` },
+    { id:'l1-s9', level:1, category:'outdoor', isDanger:false,
+      visual:`🛝🐢🙂`, caption:`Waiting your turn in line for the slide`,
+      feedback:`Taking turns keeps everyone safe and happy at the playground.` },
+    { id:'l1-s10', level:1, category:'animals', isDanger:false,
+      visual:`🐝🧍‍♀️😌`, caption:`Standing calm and still when a bee flies near you`,
+      feedback:`Staying calm and still is the safest way to let a bee fly away.` },
+    { id:'l1-s11', level:1, category:'traffic', isDanger:false,
+      visual:`🤝🅿️🚗`, caption:`Holding a grown-up's hand while walking through a parking lot`,
+      feedback:`Parking lots have moving cars — holding hands keeps you safe.` },
+    { id:'l1-s12', level:1, category:'water', isDanger:false,
+      visual:`🦺🏊😊`, caption:`Wearing your life jacket in the pool`,
+      feedback:`Life jackets help keep you safe and floating — great choice!` },
+    { id:'l1-s13', level:1, category:'fire', isDanger:false,
+      visual:`🔥🙅‍♀️🗣️`, caption:`Staying away and telling a grown-up when you see a lighter`,
+      feedback:`Perfect — never touch fire tools, just tell a grown-up right away.` },
+    { id:'l1-s14', level:1, category:'poison', isDanger:false,
+      visual:`💊🙋🧑‍👩‍👧`, caption:`Giving a found pill to a grown-up instead of touching it`,
+      feedback:`Exactly right — grown-ups should handle anything that isn't food.` },
+    { id:'l1-s15', level:1, category:'strangers', isDanger:false,
+      visual:`🚪🙅‍♂️👨‍👩‍👧`, caption:`Not opening the door and calling for a grown-up instead`,
+      feedback:`Smart and safe — always let a grown-up answer the door.` },
+
+    // ================= LEVEL 2 =================
+    { id:'l2-d1', level:2, category:'internet', isDanger:true,
+      visual:`🎮💻📍`, caption:`Telling an online gaming friend where you live`,
+      feedback:`Never share your address or personal info with people you only know online.` },
+    { id:'l2-d2', level:2, category:'home', isDanger:true,
+      visual:`🍴🔌⚡`, caption:`Sticking a metal fork into an electrical outlet`,
+      feedback:`Electricity can badly hurt you — never put anything into an outlet.` },
+    { id:'l2-d3', level:2, category:'poison', isDanger:true,
+      visual:`🍇🌳❓`, caption:`Eating wild berries you found without asking a grown-up`,
+      feedback:`Some wild berries are poisonous — always check with a grown-up first.` },
+    { id:'l2-d4', level:2, category:'body', isDanger:true,
+      visual:`🤫🧑‍🦱`, caption:`An adult asks you to keep a secret from your parents`,
+      feedback:`Grown-ups you trust don't ask you to keep secrets — always tell a parent.` },
+    { id:'l2-d5', level:2, category:'traffic', isDanger:true,
+      visual:`🚲🚗❗`, caption:`Riding your bike into the street without checking`,
+      feedback:`Always stop and look both ways before riding into a street.` },
+    { id:'l2-d6', level:2, category:'outdoor', isDanger:true,
+      visual:`🌳🧗⬆️`, caption:`Climbing to the top of a tall tree with no grown-up nearby`,
+      feedback:`High climbs can be risky — always have a grown-up nearby to help.` },
+    { id:'l2-d7', level:2, category:'internet', isDanger:true,
+      visual:`📧🎁❓`, caption:`Clicking a pop-up that says you won a free prize`,
+      feedback:`Surprise prize pop-ups are usually tricks — close them and tell a grown-up.` },
+    { id:'l2-d8', level:2, category:'outdoor', isDanger:true,
+      visual:`🚲🌆🌙`, caption:`Riding your bike far from home after dark without telling anyone`,
+      feedback:`Always tell a grown-up where you're going, especially after dark.` },
+    { id:'l2-d9', level:2, category:'home', isDanger:true,
+      visual:`🧴🧽🥤`, caption:`Pouring cleaning liquid into an empty drink bottle`,
+      feedback:`Cleaning products should always stay in their own labeled bottle — never a drink bottle.` },
+    { id:'l2-d10', level:2, category:'strangers', isDanger:true,
+      visual:`🎮🧑‍🦱🎁`, caption:`An online player offers to send you a gift if you share your address`,
+      feedback:`Never trade personal info for gifts online — tell a grown-up about offers like this.` },
+    { id:'l2-d11', level:2, category:'water', isDanger:true,
+      visual:`🏊‍♂️❓⬇️`, caption:`Jumping into a pool before checking how deep it is`,
+      feedback:`Always check the depth first — jumping into shallow water can hurt you.` },
+    { id:'l2-d12', level:2, category:'animals', isDanger:true,
+      visual:`🐕🪵😆`, caption:`Poking a stick at an animal through a fence to tease it`,
+      feedback:`Teasing animals can make them scared or angry — always leave them be.` },
+    { id:'l2-d13', level:2, category:'traffic', isDanger:true,
+      visual:`🚗🚗🚶‍♀️`, caption:`Crossing the street between two parked cars instead of at the corner`,
+      feedback:`Drivers can't see you between parked cars — always cross at the corner.` },
+    { id:'l2-d14', level:2, category:'internet', isDanger:true,
+      visual:`🎮⬇️❓`, caption:`Downloading a "free" game an online friend suggested without asking a parent`,
+      feedback:`Always ask a parent before downloading anything — even if a friend says it's free.` },
+    { id:'l2-d15', level:2, category:'home', isDanger:true,
+      visual:`🔥🗄️🤏`, caption:`Playing with matches or a lighter you found in a drawer`,
+      feedback:`Matches and lighters aren't toys — give them to a grown-up right away.` },
+
+    { id:'l2-s1', level:2, category:'internet', isDanger:false,
+      visual:`🙋‍♀️🔗💻`, caption:`Asking a parent before clicking on a surprise link`,
+      feedback:`Great instinct! Always check with a grown-up before clicking unknown links.` },
+    { id:'l2-s2', level:2, category:'home', isDanger:false,
+      visual:`🔌🧑‍🔧`, caption:`Asking a grown-up to help plug in an appliance`,
+      feedback:`Smart move — grown-ups can help with anything electrical.` },
+    { id:'l2-s3', level:2, category:'poison', isDanger:false,
+      visual:`🍓🙋`, caption:`Asking a grown-up before eating a berry you found outside`,
+      feedback:`Perfect — always check with a grown-up before eating wild plants.` },
+    { id:'l2-s4', level:2, category:'body', isDanger:false,
+      visual:`🗣️👨‍👩‍👧`, caption:`Telling a parent when someone makes you feel uncomfortable`,
+      feedback:`Yes! Always tell a trusted grown-up if something feels wrong.` },
+    { id:'l2-s5', level:2, category:'traffic', isDanger:false,
+      visual:`🚗🪢✅`, caption:`Buckling your seatbelt every time you get in the car`,
+      feedback:`Seatbelts save lives — buckle up every single ride.` },
+    { id:'l2-s6', level:2, category:'outdoor', isDanger:false,
+      visual:`🛝🧑‍🦱👀`, caption:`Playing on the playground while a grown-up watches nearby`,
+      feedback:`Playing where a grown-up can see you is a safe choice.` },
+    { id:'l2-s7', level:2, category:'internet', isDanger:false,
+      visual:`❌🎁🙋`, caption:`Closing a "you won a prize!" pop-up and telling a grown-up`,
+      feedback:`Great instinct — most surprise prizes online are scams.` },
+    { id:'l2-s8', level:2, category:'outdoor', isDanger:false,
+      visual:`🚲🗣️👨‍👩‍👧`, caption:`Telling a parent where you're riding your bike before you go`,
+      feedback:`Always let a grown-up know where you'll be — smart and safe!` },
+    { id:'l2-s9', level:2, category:'home', isDanger:false,
+      visual:`🧴🔒🧑‍🔧`, caption:`Leaving cleaning products in their locked cabinet`,
+      feedback:`Cleaning products belong locked away — good thinking.` },
+    { id:'l2-s10', level:2, category:'strangers', isDanger:false,
+      visual:`🎮🙅‍♂️🗣️`, caption:`Saying no to an online gift offer and telling a grown-up`,
+      feedback:`Exactly right — always tell a trusted adult about gift offers online.` },
+    { id:'l2-s11', level:2, category:'water', isDanger:false,
+      visual:`📏🏊👨‍👩‍👧`, caption:`Checking the depth with a grown-up before jumping in`,
+      feedback:`Smart — always know how deep the water is before you jump.` },
+    { id:'l2-s12', level:2, category:'animals', isDanger:false,
+      visual:`🐕👀😌`, caption:`Watching an animal calmly instead of teasing it`,
+      feedback:`Great instinct — calm and gentle keeps everyone safe.` },
+    { id:'l2-s13', level:2, category:'traffic', isDanger:false,
+      visual:`🚦🚶‍♀️👀`, caption:`Crossing at the corner where drivers can see you`,
+      feedback:`Perfect — corners are the safest place for drivers to spot you.` },
+    { id:'l2-s14', level:2, category:'internet', isDanger:false,
+      visual:`🙋👨‍👩‍👧⬇️`, caption:`Asking a parent before downloading any new app or game`,
+      feedback:`Exactly right — always check with a grown-up first.` },
+    { id:'l2-s15', level:2, category:'home', isDanger:false,
+      visual:`🔥🙋🧑‍🔧`, caption:`Giving a found lighter or matches straight to a grown-up`,
+      feedback:`Great choice — grown-ups know how to keep those safe.` },
+
+    // ================= LEVEL 3 =================
+    { id:'l3-d1', level:3, category:'internet', isDanger:true,
+      visual:`💻🎥🚪`, caption:`An online game "friend" asks to meet you in person, alone`,
+      feedback:`Online friends aren't always who they say — never meet up without a trusted grown-up.` },
+    { id:'l3-d2', level:3, category:'strangers', isDanger:true,
+      visual:`📦🚪❓`, caption:`Someone you don't recognize asks to come inside your home`,
+      feedback:`Never let someone you don't know into your home — get a grown-up first.` },
+    { id:'l3-d3', level:3, category:'water', isDanger:true,
+      visual:`⛈️🏊‍♀️`, caption:`Swimming in the pool while lightning flashes in the sky`,
+      feedback:`Lightning and water are a dangerous mix — always get out and go inside during a storm.` },
+    { id:'l3-d4', level:3, category:'fire', isDanger:true,
+      visual:`🍽️⚡🔥`, caption:`Putting a metal container in the microwave all by yourself`,
+      feedback:`Metal in a microwave can spark a fire — always check with a grown-up first.` },
+    { id:'l3-d5', level:3, category:'poison', isDanger:true,
+      visual:`💊🍬`, caption:`Taking extra medicine because it tastes sweet like candy`,
+      feedback:`Medicine is not candy — only take what a grown-up gives you.` },
+    { id:'l3-d6', level:3, category:'body', isDanger:true,
+      visual:`🎁💻📷`, caption:`An online stranger offers you a gift for a photo of yourself`,
+      feedback:`That's a big warning sign — tell a trusted grown-up and never send photos to strangers.` },
+    { id:'l3-d7', level:3, category:'internet', isDanger:true,
+      visual:`📱💬🔒❓`, caption:`Sharing your password with an online "friend" you've never met`,
+      feedback:`Never share passwords, even with online friends — keep them private.` },
+    { id:'l3-d8', level:3, category:'outdoor', isDanger:true,
+      visual:`🧊🏞️🚶`, caption:`Walking out onto a frozen pond to test the ice`,
+      feedback:`Ice can be thinner than it looks — never walk on frozen water without an adult's okay.` },
+    { id:'l3-d9', level:3, category:'traffic', isDanger:true,
+      visual:`🎧🚦🚶‍♀️`, caption:`Crossing the street with headphones on so loud you can't hear cars`,
+      feedback:`Keep the volume down or headphones off near traffic so you can hear what's coming.` },
+    { id:'l3-d10', level:3, category:'body', isDanger:true,
+      visual:`📸🧑‍🦱💬`, caption:`An online stranger asks you to video chat privately`,
+      feedback:`Say no to private video chats with people you don't know, and tell a trusted adult.` },
+    { id:'l3-d11', level:3, category:'animals', isDanger:true,
+      visual:`🦝🤳➡️`, caption:`Getting close to a wild animal to take a photo`,
+      feedback:`Wild animals can be unpredictable — admire them from a distance only.` },
+    { id:'l3-d12', level:3, category:'home', isDanger:true,
+      visual:`🔥🪟🧣`, caption:`Placing a space heater right next to curtains`,
+      feedback:`Space heaters need clear space around them — keep fabric far away.` },
+    { id:'l3-d13', level:3, category:'internet', isDanger:true,
+      visual:`⬇️🔓🎮`, caption:`Downloading software an online "friend" sends to "unlock" a game`,
+      feedback:`Unknown downloads can be harmful — always check with a trusted adult first.` },
+    { id:'l3-d14', level:3, category:'strangers', isDanger:true,
+      visual:`🚗🧑‍🦱❓`, caption:`Accepting a ride home from someone's parent you just met`,
+      feedback:`Only accept rides from adults your own parents already approved.` },
+    { id:'l3-d15', level:3, category:'body', isDanger:true,
+      visual:`🤐😟🧑`, caption:`Staying quiet when an older kid pressures you into something that feels wrong`,
+      feedback:`Your feelings are a signal — always tell a trusted adult when something feels wrong.` },
+
+    { id:'l3-s1', level:3, category:'internet', isDanger:false,
+      visual:`🔒👍💻`, caption:`Using privacy settings so only real friends see your posts`,
+      feedback:`Smart! Privacy settings help keep strangers from seeing your info.` },
+    { id:'l3-s2', level:3, category:'water', isDanger:false,
+      visual:`⛈️🏊➡️🏠`, caption:`Getting out of the pool right when you hear thunder`,
+      feedback:`Perfect — always leave the water immediately if a storm starts.` },
+    { id:'l3-s3', level:3, category:'strangers', isDanger:false,
+      visual:`🚪🙋‍♂️🧑‍🦱`, caption:`Letting a grown-up answer the door for a visitor`,
+      feedback:`Great habit — always let a trusted grown-up answer the door.` },
+    { id:'l3-s4', level:3, category:'poison', isDanger:false,
+      visual:`💊🙋`, caption:`Asking a grown-up before taking any medicine`,
+      feedback:`Exactly right — only take medicine a grown-up gives you.` },
+    { id:'l3-s5', level:3, category:'fire', isDanger:false,
+      visual:`🍽️🧑‍🍳`, caption:`Asking a grown-up to help you use the microwave`,
+      feedback:`Nice and safe — grown-ups can help make sure it's done right.` },
+    { id:'l3-s6', level:3, category:'body', isDanger:false,
+      visual:`🗣️💻🧑‍🦱`, caption:`Telling a trusted adult when an online stranger asks for photos`,
+      feedback:`Exactly — always tell a trusted grown-up right away if this happens.` },
+    { id:'l3-s7', level:3, category:'internet', isDanger:false,
+      visual:`🔑🤐✅`, caption:`Keeping your passwords private, even from online friends`,
+      feedback:`Perfect — passwords are just for you (and maybe a parent).` },
+    { id:'l3-s8', level:3, category:'outdoor', isDanger:false,
+      visual:`🧊🚫🧑‍🦱`, caption:`Staying off the ice and telling an adult it looks frozen over`,
+      feedback:`Smart! Let a grown-up check the ice before anyone goes near it.` },
+    { id:'l3-s9', level:3, category:'traffic', isDanger:false,
+      visual:`🎧🔇🚦`, caption:`Pausing your music before crossing at the light`,
+      feedback:`Great habit — being able to hear traffic keeps you safer.` },
+    { id:'l3-s10', level:3, category:'body', isDanger:false,
+      visual:`🙅‍♀️💬👨‍👩‍👧`, caption:`Declining a video chat request and telling a parent about it`,
+      feedback:`Exactly right — always tell a trusted adult about requests like that.` },
+    { id:'l3-s11', level:3, category:'animals', isDanger:false,
+      visual:`🦝👀↔️`, caption:`Admiring a wild animal from a safe distance`,
+      feedback:`Perfect — enjoy wildlife with your eyes, not up close.` },
+    { id:'l3-s12', level:3, category:'home', isDanger:false,
+      visual:`🔥📏✅`, caption:`Keeping space heaters away from curtains and fabric`,
+      feedback:`Great habit — clear space around heaters prevents fires.` },
+    { id:'l3-s13', level:3, category:'internet', isDanger:false,
+      visual:`🚫⬇️👨‍👩‍👧`, caption:`Refusing an unknown download and telling a parent`,
+      feedback:`Exactly right — unknown files can be risky, always check first.` },
+    { id:'l3-s14', level:3, category:'strangers', isDanger:false,
+      visual:`🚗✅👨‍👩‍👧`, caption:`Only accepting rides from people your parents already approved`,
+      feedback:`Smart and safe — that's exactly the rule to follow.` },
+    { id:'l3-s15', level:3, category:'body', isDanger:false,
+      visual:`🗣️👨‍👩‍👧😌`, caption:`Telling a trusted adult when an older kid pressures you`,
+      feedback:`Speaking up takes courage — that's exactly the right move.` },
+
+    // ================= LEVEL 4 (Safety Navigator, ages 13–15) =================
+    { id:'l4-d1', level:4, category:'internet', isDanger:true,
+      visual:`💬🕵️‍♂️📍`, caption:`Sharing your school's name and daily schedule with someone you met in a game`,
+      feedback:`Details like your school and schedule can help a stranger find you — keep them private.` },
+    { id:'l4-d2', level:4, category:'social', isDanger:true,
+      visual:`🚬👥😬`, caption:`Friends pressure you to try vaping "just once"`,
+      feedback:`Real friends don't pressure you — it's okay to say no, even if others do it.` },
+    { id:'l4-d3', level:4, category:'internet', isDanger:true,
+      visual:`🔗📧💳`, caption:`Clicking a text link claiming you owe money and must pay right now`,
+      feedback:`Urgent money texts are often scams — never click, and check with a trusted adult first.` },
+    { id:'l4-d4', level:4, category:'body', isDanger:true,
+      visual:`📱🔞😳`, caption:`Someone online asks you to send a private photo of yourself`,
+      feedback:`Never send private photos — this is a big warning sign, tell a trusted adult right away.` },
+    { id:'l4-d5', level:4, category:'strangers', isDanger:true,
+      visual:`🚗🧑‍🦱🎮`, caption:`An online "friend" you've never met asks to meet up alone`,
+      feedback:`Never meet an online-only friend alone — bring a trusted adult, or don't go.` },
+    { id:'l4-d6', level:4, category:'social', isDanger:true,
+      visual:`📵🧑‍🤝‍🧑😢`, caption:`Seeing a classmate get bullied online and doing nothing`,
+      feedback:`Staying silent lets bullying continue — tell a trusted adult what you saw.` },
+    { id:'l4-d7', level:4, category:'home', isDanger:true,
+      visual:`🏠🚪🔓🌙`, caption:`Letting yourself get talked into sneaking out at night`,
+      feedback:`Sneaking out at night is risky — talk to a trusted adult about your plans instead.` },
+    { id:'l4-d8', level:4, category:'internet', isDanger:true,
+      visual:`🎭🔑🙅`, caption:`Using the exact same password for every single account`,
+      feedback:`One leaked password can unlock everything — use a different password for each account.` },
+    { id:'l4-d9', level:4, category:'substances', isDanger:true,
+      visual:`🍺🎉❓`, caption:`Drinking a cup at a party without knowing what's in it`,
+      feedback:`Never drink something you didn't see poured — it's not worth the risk.` },
+    { id:'l4-d10', level:4, category:'social', isDanger:true,
+      visual:`🤳🚫👫`, caption:`A partner asks you to stop talking to your friends and family`,
+      feedback:`Wanting to cut you off from people who love you is a warning sign — talk to a trusted adult.` },
+    { id:'l4-d11', level:4, category:'internet', isDanger:true,
+      visual:`⚠️📧🔗`, caption:`Clicking a "your account will be deleted!" message and entering your login`,
+      feedback:`Urgent account warnings are a classic phishing trick — never click, check with an adult instead.` },
+    { id:'l4-d12', level:4, category:'social', isDanger:true,
+      visual:`📸😳➡️`, caption:`Forwarding an embarrassing photo of a classmate to "just a few friends"`,
+      feedback:`Forwarding it still spreads it — never share embarrassing photos of anyone.` },
+    { id:'l4-d13', level:4, category:'money', isDanger:true,
+      visual:`🎁💳➡️`, caption:`Buying a gift card and sending the code to an online "friend" who asked`,
+      feedback:`Real friends never ask for gift card codes — that's a classic scam request.` },
+    { id:'l4-d14', level:4, category:'substances', isDanger:true,
+      visual:`💨🚬😌`, caption:`Trying a vape pen because someone said it's "just flavoring"`,
+      feedback:`Vapes can contain nicotine even when marketed as flavoring — it's okay to say no.` },
+    { id:'l4-d15', level:4, category:'home', isDanger:true,
+      visual:`🏠🎉🙅`, caption:`Inviting people over while home alone without asking a parent`,
+      feedback:`Always ask a parent first — they need to know who's in the house.` },
+
+    { id:'l4-s1', level:4, category:'internet', isDanger:false,
+      visual:`🔒🙊✅`, caption:`Keeping your school name and schedule private online`,
+      feedback:`Great instinct — personal details like these should stay private.` },
+    { id:'l4-s2', level:4, category:'social', isDanger:false,
+      visual:`🙅‍♂️😌👍`, caption:`Saying "no thanks" when friends pressure you to vape`,
+      feedback:`It takes courage to say no — that's exactly the right call.` },
+    { id:'l4-s3', level:4, category:'internet', isDanger:false,
+      visual:`🚫🔗👨‍👩‍👧`, caption:`Ignoring a scary payment text and asking a trusted adult about it`,
+      feedback:`Perfect — always double-check urgent money messages with an adult.` },
+    { id:'l4-s4', level:4, category:'body', isDanger:false,
+      visual:`🙅‍♀️📵👨‍👩‍👧`, caption:`Refusing to send a private photo and telling a trusted adult`,
+      feedback:`Exactly right — that's a big red flag worth telling someone about.` },
+    { id:'l4-s5', level:4, category:'strangers', isDanger:false,
+      visual:`👨‍👩‍👧🎮🤝`, caption:`Bringing a trusted adult the first time you meet an online friend`,
+      feedback:`Smart and safe — always meet online friends with a trusted adult, in public.` },
+    { id:'l4-s6', level:4, category:'social', isDanger:false,
+      visual:`🗣️👨‍👩‍👧😢`, caption:`Telling a trusted adult after seeing a classmate get bullied online`,
+      feedback:`Speaking up helps — you did the right thing.` },
+    { id:'l4-s7', level:4, category:'home', isDanger:false,
+      visual:`🗣️🏠👨‍👩‍👧`, caption:`Talking to a trusted adult instead of sneaking out at night`,
+      feedback:`Great choice — being honest keeps everyone safer.` },
+    { id:'l4-s8', level:4, category:'internet', isDanger:false,
+      visual:`🔑🔐✅`, caption:`Using a different password for each of your accounts`,
+      feedback:`Perfect password habit — it keeps one leak from spreading everywhere.` },
+    { id:'l4-s9', level:4, category:'substances', isDanger:false,
+      visual:`🥤👀✅`, caption:`Only drinking something you watched get poured yourself`,
+      feedback:`Smart and safe — always know what's in your cup.` },
+    { id:'l4-s10', level:4, category:'social', isDanger:false,
+      visual:`🚩🗣️👨‍👩‍👧`, caption:`Telling a trusted adult when a partner tries to isolate you from friends`,
+      feedback:`Exactly right — that's a warning sign worth talking about.` },
+    { id:'l4-s11', level:4, category:'internet', isDanger:false,
+      visual:`🚫📧👨‍👩‍👧`, caption:`Reporting a suspicious "account deleted" message instead of clicking it`,
+      feedback:`Exactly right — always verify with a trusted adult before clicking urgent messages.` },
+    { id:'l4-s12', level:4, category:'social', isDanger:false,
+      visual:`🙅‍♀️📸😌`, caption:`Refusing to forward an embarrassing photo of a classmate`,
+      feedback:`Great call — that kindness matters more than fitting in.` },
+    { id:'l4-s13', level:4, category:'money', isDanger:false,
+      visual:`🙅💳🎁`, caption:`Refusing to send a gift card code to anyone, even a "friend"`,
+      feedback:`Smart — gift card codes should never be shared with anyone who asks.` },
+    { id:'l4-s14', level:4, category:'substances', isDanger:false,
+      visual:`🙅‍♂️💨😊`, caption:`Saying no to a vape pen even when a friend says it's "just flavoring"`,
+      feedback:`Exactly right — you get to decide what goes in your body.` },
+    { id:'l4-s15', level:4, category:'home', isDanger:false,
+      visual:`🙋🏠👨‍👩‍👧`, caption:`Asking a parent before having anyone over while home alone`,
+      feedback:`Perfect — that's exactly the right thing to check first.` },
+
+    // ================= LEVEL 5 (Safety Strategist, ages 16–18) =================
+    { id:'l5-d1', level:5, category:'vehicle', isDanger:true,
+      visual:`📱🚗💨`, caption:`Texting on your phone while driving`,
+      feedback:`Texting and driving is one of the most dangerous things you can do — phone away, eyes on the road.` },
+    { id:'l5-d2', level:5, category:'substances', isDanger:true,
+      visual:`🍺🚗🔑`, caption:`Getting in the car with a driver who's been drinking`,
+      feedback:`Never ride with a driver who's been drinking — call another ride or a trusted adult instead.` },
+    { id:'l5-d3', level:5, category:'work', isDanger:true,
+      visual:`🏗️🚫🥽`, caption:`Skipping your safety goggles because they're "annoying"`,
+      feedback:`Safety gear exists to protect you — always use it, even when it's inconvenient.` },
+    { id:'l5-d4', level:5, category:'money', isDanger:true,
+      visual:`💼📧💸`, caption:`A job offer asks you to pay a fee upfront to "start working"`,
+      feedback:`Real jobs never ask you to pay them first — that's a common scam.` },
+    { id:'l5-d5', level:5, category:'social', isDanger:true,
+      visual:`💔🚫🗣️`, caption:`A partner gets angry whenever you spend time with friends`,
+      feedback:`Controlling anger about your friendships is a red flag — trust your instincts and talk to someone you trust.` },
+    { id:'l5-d6', level:5, category:'vehicle', isDanger:true,
+      visual:`🚗🌙🧍‍♂️❓`, caption:`Getting into a rideshare car without checking the plate matches the app`,
+      feedback:`Always check the plate, driver photo, and name match the app before getting in.` },
+    { id:'l5-d7', level:5, category:'internet', isDanger:true,
+      visual:`💳🔗🎁`, caption:`Entering your card number on a site promising a "too good to be true" deal`,
+      feedback:`If a deal looks impossibly good, it probably is — verify the site before entering card info.` },
+    { id:'l5-d8', level:5, category:'substances', isDanger:true,
+      visual:`💊🎉🙅`, caption:`Taking a pill offered by someone at a party you don't know well`,
+      feedback:`Never take pills from people you don't know well — it could be anything.` },
+    { id:'l5-d9', level:5, category:'body', isDanger:true,
+      visual:`❌🗣️😳`, caption:`Going along with something physical because you feel too awkward to say no`,
+      feedback:`You can always say no, even if it feels awkward — your comfort matters.` },
+    { id:'l5-d10', level:5, category:'work', isDanger:true,
+      visual:`📱🤐👔`, caption:`Staying quiet about a boss making you feel uncomfortable at work`,
+      feedback:`Uncomfortable behavior at work should be reported — talk to HR or a trusted adult.` },
+    { id:'l5-d11', level:5, category:'vehicle', isDanger:true,
+      visual:`🏎️⏰😬`, caption:`Speeding because you're running late and don't want to be last`,
+      feedback:`Being a few minutes late is never worth the risk — speed doesn't fix lateness safely.` },
+    { id:'l5-d12', level:5, category:'internet', isDanger:true,
+      visual:`📍🌍📱`, caption:`Posting your live location for anyone on social media to see`,
+      feedback:`Live location shared publicly can let strangers find you — keep it to trusted people only.` },
+    { id:'l5-d13', level:5, category:'work', isDanger:true,
+      visual:`🚗📦🤐`, caption:`Taking a delivery driving job without telling anyone your route or schedule`,
+      feedback:`Always let someone know your schedule and route when working alone.` },
+    { id:'l5-d14', level:5, category:'money', isDanger:true,
+      visual:`💻🔑🧑‍🔧`, caption:`Giving your bank login to a "helper" who called offering to fix your computer`,
+      feedback:`Never give banking info to unsolicited "tech support" — that's a common scam.` },
+    { id:'l5-d15', level:5, category:'social', isDanger:true,
+      visual:`🤫😰👫`, caption:`Agreeing to keep a friend's risky secret instead of telling an adult`,
+      feedback:`Some secrets are too big to keep — telling a trusted adult can help your friend stay safe.` },
+
+    { id:'l5-s1', level:5, category:'vehicle', isDanger:false,
+      visual:`📵🚗✅`, caption:`Putting your phone away before you start driving`,
+      feedback:`Phone away, eyes on the road — great habit for staying safe.` },
+    { id:'l5-s2', level:5, category:'substances', isDanger:false,
+      visual:`🚕🙋‍♂️✅`, caption:`Calling a ride instead of driving after a friend has been drinking`,
+      feedback:`Smart call — arranging a safe ride can save lives.` },
+    { id:'l5-s3', level:5, category:'work', isDanger:false,
+      visual:`🥽✅👍`, caption:`Wearing your safety goggles every time, even when it's slow`,
+      feedback:`Consistent safety habits are what keep you protected — nice work.` },
+    { id:'l5-s4', level:5, category:'money', isDanger:false,
+      visual:`🙅💼🔍`, caption:`Turning down a job that asks for money upfront`,
+      feedback:`Exactly right — legit jobs pay you, they don't charge you.` },
+    { id:'l5-s5', level:5, category:'social', isDanger:false,
+      visual:`🗣️😊👫`, caption:`Talking to someone you trust about a partner's controlling behavior`,
+      feedback:`Reaching out for support is a strong, smart move.` },
+    { id:'l5-s6', level:5, category:'vehicle', isDanger:false,
+      visual:`🔍🚗✅`, caption:`Checking the plate and driver photo before getting into a rideshare`,
+      feedback:`Perfect — always confirm the details match before you get in.` },
+    { id:'l5-s7', level:5, category:'internet', isDanger:false,
+      visual:`🔍🛒✅`, caption:`Researching a site before entering your card number for a big discount`,
+      feedback:`Great instinct — a little research can save you from a scam.` },
+    { id:'l5-s8', level:5, category:'substances', isDanger:false,
+      visual:`🙅‍♀️💊✅`, caption:`Refusing a pill from someone you don't know well at a party`,
+      feedback:`Exactly right — never take anything you're not 100% sure about.` },
+    { id:'l5-s9', level:5, category:'body', isDanger:false,
+      visual:`🗣️❌😌`, caption:`Saying no even though it feels awkward, and being respected for it`,
+      feedback:`Your voice matters — saying no is always okay.` },
+    { id:'l5-s10', level:5, category:'work', isDanger:false,
+      visual:`🗣️💼✅`, caption:`Reporting uncomfortable behavior at work to HR or a trusted adult`,
+      feedback:`Speaking up is exactly the right move — you deserve to feel safe at work.` },
+    { id:'l5-s11', level:5, category:'vehicle', isDanger:false,
+      visual:`⏰➡️✅`, caption:`Leaving early so there's no reason to speed`,
+      feedback:`Smart planning — giving yourself time is the easiest way to stay safe.` },
+    { id:'l5-s12', level:5, category:'internet', isDanger:false,
+      visual:`📍🔒👫`, caption:`Keeping your live location shared with trusted friends and family only`,
+      feedback:`Perfect — location sharing should stay private to people you trust.` },
+    { id:'l5-s13', level:5, category:'work', isDanger:false,
+      visual:`🗣️📅👨‍👩‍👧`, caption:`Telling a family member your work schedule and route`,
+      feedback:`Great habit — someone should always know where you'll be.` },
+    { id:'l5-s14', level:5, category:'money', isDanger:false,
+      visual:`🙅💻🔑`, caption:`Refusing to give banking info to an unsolicited "tech support" caller`,
+      feedback:`Exactly right — real tech support never calls asking for your bank login.` },
+    { id:'l5-s15', level:5, category:'social', isDanger:false,
+      visual:`🗣️👨‍👩‍👧💬`, caption:`Telling a trusted adult about a friend's risky secret, even though it's hard`,
+      feedback:`That's real courage — it can help keep your friend safe.` },
+
+    // ================= LEVEL 6 (Safety Pro, ages 19–20+) =================
+    { id:'l6-d1', level:6, category:'money', isDanger:true,
+      visual:`🏠📄💸❓`, caption:`Wiring a deposit for an apartment you've only seen in photos`,
+      feedback:`Always tour a rental in person (or verify it's real) before sending any money.` },
+    { id:'l6-d2', level:6, category:'internet', isDanger:true,
+      visual:`☎️🏦😨`, caption:`A caller claiming to be your bank asks for your PIN over the phone`,
+      feedback:`Banks never ask for your PIN by phone — hang up and call the bank directly yourself.` },
+    { id:'l6-d3', level:6, category:'home', isDanger:true,
+      visual:`🚪🔓🌃`, caption:`Leaving your apartment door unlocked overnight because you're "just tired"`,
+      feedback:`Always lock up, even when you're exhausted — it takes two seconds and keeps you safe.` },
+    { id:'l6-d4', level:6, category:'vehicle', isDanger:true,
+      visual:`🍸🚗🔑`, caption:`Driving yourself home after a few drinks because it's "not far"`,
+      feedback:`Any amount of alcohol impairs driving — always call a ride instead.` },
+    { id:'l6-d5', level:6, category:'work', isDanger:true,
+      visual:`📧💼🎯`, caption:`Wiring money for a "job" that only ever communicates by text and email`,
+      feedback:`Legit employers meet you properly and never ask you to wire them money — that's a scam pattern.` },
+    { id:'l6-d6', level:6, category:'internet', isDanger:true,
+      visual:`🔓🔑📱`, caption:`Skipping two-factor authentication because it's "one extra step"`,
+      feedback:`That extra step is what keeps hackers out — always turn on two-factor authentication.` },
+    { id:'l6-d7', level:6, category:'social', isDanger:true,
+      visual:`💘📍🚗`, caption:`Meeting an online date alone at their place for the first time`,
+      feedback:`Meet first dates in public, and tell a friend where you'll be — every time.` },
+    { id:'l6-d8', level:6, category:'money', isDanger:true,
+      visual:`📈💰❗`, caption:`Investing your savings based on a stranger's "guaranteed" crypto tip`,
+      feedback:`"Guaranteed" high returns are a classic scam sign — never invest based on a stranger's tip.` },
+    { id:'l6-d9', level:6, category:'home', isDanger:true,
+      visual:`🔥🚨🔇`, caption:`Ignoring a smoke detector that's been beeping for weeks`,
+      feedback:`A beeping detector needs a new battery right away — don't ignore it.` },
+    { id:'l6-d10', level:6, category:'work', isDanger:true,
+      visual:`🤐💼😞`, caption:`Staying silent about workplace harassment because you're "new"`,
+      feedback:`You have the right to a safe workplace — report it, no matter how long you've been there.` },
+    { id:'l6-d11', level:6, category:'money', isDanger:true,
+      visual:`☎️🆔❓`, caption:`Giving your social security number to an unsolicited caller`,
+      feedback:`Legit agencies don't call asking for your social security number — hang up and verify yourself.` },
+    { id:'l6-d12', level:6, category:'home', isDanger:true,
+      visual:`🛒🚪🧑‍🦱`, caption:`Meeting a random online marketplace buyer alone at your apartment`,
+      feedback:`Meet online marketplace buyers in a public, well-lit place — never alone at home.` },
+    { id:'l6-d13', level:6, category:'vehicle', isDanger:true,
+      visual:`😴🚗🛣️`, caption:`Driving drowsy on a long trip instead of stopping to rest`,
+      feedback:`Drowsy driving is as risky as impaired driving — always stop and rest.` },
+    { id:'l6-d14', level:6, category:'work', isDanger:true,
+      visual:`📄✍️🙈`, caption:`Signing a contract without reading it because "everyone signs it"`,
+      feedback:`Always read (or ask someone to review) a contract before you sign it.` },
+    { id:'l6-d15', level:6, category:'internet', isDanger:true,
+      visual:`🔑💼🛒`, caption:`Reusing your work email password on personal shopping sites`,
+      feedback:`Reusing passwords means one leak can compromise everything — keep them separate.` },
+
+    { id:'l6-s1', level:6, category:'money', isDanger:false,
+      visual:`🏠👀✅`, caption:`Touring an apartment in person before paying any deposit`,
+      feedback:`Smart — always verify a rental is real before any money changes hands.` },
+    { id:'l6-s2', level:6, category:'internet', isDanger:false,
+      visual:`☎️❌🏦`, caption:`Hanging up on a caller asking for your bank PIN and calling the bank yourself`,
+      feedback:`Exactly right — verify by calling the number on your card, not the caller.` },
+    { id:'l6-s3', level:6, category:'home', isDanger:false,
+      visual:`🔒🚪✅`, caption:`Locking your door every night before bed, no matter how tired you are`,
+      feedback:`Great habit — consistency is what keeps a routine safe.` },
+    { id:'l6-s4', level:6, category:'vehicle', isDanger:false,
+      visual:`🚕🍸✅`, caption:`Calling a ride home after having a few drinks`,
+      feedback:`Perfect choice — never drive after drinking, even "just a little."` },
+    { id:'l6-s5', level:6, category:'work', isDanger:false,
+      visual:`🤝💼✅`, caption:`Meeting an employer in person and never wiring them money`,
+      feedback:`Smart — legitimate jobs don't ask you to send them money.` },
+    { id:'l6-s6', level:6, category:'internet', isDanger:false,
+      visual:`🔐📱✅`, caption:`Turning on two-factor authentication for your important accounts`,
+      feedback:`Great move — that extra step blocks most account break-ins.` },
+    { id:'l6-s7', level:6, category:'social', isDanger:false,
+      visual:`☕📍🗣️`, caption:`Meeting a first date in public and telling a friend the plan`,
+      feedback:`Exactly right — public spot, friend informed, every first date.` },
+    { id:'l6-s8', level:6, category:'money', isDanger:false,
+      visual:`🔍💰✅`, caption:`Researching an investment thoroughly instead of trusting a stranger's tip`,
+      feedback:`Smart — real research beats "guaranteed" promises every time.` },
+    { id:'l6-s9', level:6, category:'home', isDanger:false,
+      visual:`🔋🚨✅`, caption:`Replacing the smoke detector battery as soon as it starts beeping`,
+      feedback:`Perfect — a working smoke detector is one of the best safety tools in your home.` },
+    { id:'l6-s10', level:6, category:'work', isDanger:false,
+      visual:`🗣️💼✅`, caption:`Reporting workplace harassment even as the newest employee`,
+      feedback:`Exactly right — you deserve a safe workplace from day one.` },
+    { id:'l6-s11', level:6, category:'money', isDanger:false,
+      visual:`🙅☎️🆔`, caption:`Refusing to give your social security number to an unsolicited caller`,
+      feedback:`Exactly right — hang up and verify through an official number yourself.` },
+    { id:'l6-s12', level:6, category:'home', isDanger:false,
+      visual:`🛒☕📍`, caption:`Meeting an online marketplace buyer in a public, well-lit place`,
+      feedback:`Smart and safe — public meetups protect everyone involved.` },
+    { id:'l6-s13', level:6, category:'vehicle', isDanger:false,
+      visual:`😴🅿️✅`, caption:`Pulling over to rest when you feel drowsy on a long drive`,
+      feedback:`Perfect — resting when you're tired keeps you and everyone else safe.` },
+    { id:'l6-s14', level:6, category:'work', isDanger:false,
+      visual:`📄🔍✅`, caption:`Reading a contract fully (or asking someone) before signing it`,
+      feedback:`Great habit — always know what you're agreeing to.` },
+    { id:'l6-s15', level:6, category:'internet', isDanger:false,
+      visual:`🔑🔐✅`, caption:`Using a unique password for your work email, separate from personal accounts`,
+      feedback:`Exactly right — keeping passwords separate limits the damage of any one leak.` }
+  ];
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function heartsDisplay(lives){
+    var s = '';
+    for(var i = 0; i < LIVES_MAX; i++) s += (i < lives ? '❤️' : '🖤');
+    return s;
+  }
+  function computeRoundTime(item, tierCfg){
+    // Reading time scales with how long the caption is, so a long sentence isn't cut short —
+    // then a flat answerBuffer is added on top purely for making the SAFE/DANGER choice.
+    var promptWords = (item.caption + ' Is this safe or danger').trim().split(/\s+/).filter(Boolean).length;
+    var readSeconds = promptWords / READ_WORDS_PER_SEC;
+    return clamp(readSeconds + tierCfg.answerBuffer, tierCfg.minTime, tierCfg.maxTime);
+  }
+
+  /* ---------------- State ---------------- */
+  var state;
+  function freshState(opts){
+    opts = opts || {};
+    // Full journey plays every phase in order; picking a level from the start-screen grid
+    // plays just that one phase — a quick way to jump straight to an age-appropriate set.
+    var levels = opts.onlyLevel ? [opts.onlyLevel] : TIERS.map(function(t){ return t.level; });
+    var order = [];
+    var levelOffsets = {}; // level number -> index in `order` where that level's rounds start
+    levels.forEach(function(lvl){
+      levelOffsets[lvl] = order.length;
+      var dangerPool = shuffle(CONTENT.filter(function(c){ return c.level === lvl && c.isDanger; }));
+      var safePool = shuffle(CONTENT.filter(function(c){ return c.level === lvl && !c.isDanger; }));
+      var picked = dangerPool.slice(0, ROUNDS_PER_LEVEL / 2).concat(safePool.slice(0, ROUNDS_PER_LEVEL / 2));
+      order = order.concat(shuffle(picked));
+    });
+    return {
+      order: order,
+      levelOffsets: levelOffsets,
+      onlyLevel: opts.onlyLevel || null,
+      idx: -1,
+      score: 0,
+      lives: LIVES_MAX,
+      streak: 0,
+      bestStreak: 0,
+      correct: 0,
+      answeredCount: 0,
+      dangerTotal: 0,
+      dangerCaught: 0,
+      safeTotal: 0,
+      safeTrusted: 0,
+      results: [], // 'correct' | 'wrong' per answered round, in order
+      timer: null,
+      remaining: 0,
+      limit: 0,
+      lastTickSec: null,
+      answered: false,
+      levelShown: -1,
+      over: false
+    };
+  }
+
+  var el = {
+    statScore: document.getElementById('statScore'),
+    statLevel: document.getElementById('statLevel'),
+    statLives: document.getElementById('statLives'),
+    lvlLabel: document.getElementById('lvlLabel'),
+    dots: document.getElementById('dots'),
+    card: document.getElementById('card'),
+    startOverlay: document.getElementById('startOverlay'),
+    pickerOverlay: document.getElementById('pickerOverlay'),
+    endOverlay: document.getElementById('endOverlay'),
+    btnStart: document.getElementById('btnStart'),
+    btnRestart: document.getElementById('btnRestart'),
+    levelGrid: document.getElementById('levelGrid'),
+    levelGridPicker: document.getElementById('levelGridPicker')
+  };
+
+  function renderHeader(){
+    el.statScore.textContent = state.score;
+    el.statLevel.textContent = state.levelShown > 0 ? TIERS[state.levelShown - 1].emoji + ' ' + state.levelShown : '–';
+    el.statLives.textContent = heartsDisplay(state.lives);
+  }
+
+  function renderDots(){
+    el.dots.innerHTML = '';
+    var levelStart = state.levelOffsets[state.levelShown] || 0;
+    for(var i = 0; i < ROUNDS_PER_LEVEL; i++){
+      var globalIdx = levelStart + i;
+      var d = document.createElement('span');
+      var cls = 'dot';
+      if(state.results[globalIdx] === 'correct') cls += ' correct';
+      else if(state.results[globalIdx] === 'wrong') cls += ' wrong';
+      else if(globalIdx === state.idx) cls += ' current';
+      d.className = cls;
+      el.dots.appendChild(d);
+    }
+  }
+
+  /* ---------------- Timer ---------------- */
+  function clearTimer(){
+    if(state.timer){ clearInterval(state.timer); state.timer = null; }
+  }
+
+  function ringColor(pct){
+    if(pct <= 25) return 'var(--danger)';
+    if(pct <= 55) return 'var(--warn)';
+    return 'var(--safe)';
+  }
+
+  function tickTimer(){
+    state.remaining -= 0.1;
+    if(state.remaining < 0) state.remaining = 0;
+    var pct = (state.remaining / state.limit) * 100;
+    var ring = document.getElementById('timerRing');
+    if(ring){
+      ring.style.background = 'conic-gradient(' + ringColor(pct) + ' ' + pct + '%, var(--surface-2) 0)';
+      var secsEl = document.getElementById('timerSecs');
+      if(secsEl) secsEl.textContent = Math.ceil(state.remaining);
+    }
+    var ceilSec = Math.ceil(state.remaining);
+    if(ceilSec <= 3 && ceilSec > 0 && ceilSec !== state.lastTickSec){
+      state.lastTickSec = ceilSec;
+      playTick();
+    }
+    if(state.remaining <= 0){
+      clearTimer();
+      decide(null, true);
+    }
+  }
+
+  /* ---------------- Rendering a round ---------------- */
+  function renderLevelIntro(tierCfg, isFirst){
+    var heading = isFirst ? 'Level ' + tierCfg.level + ': ' + escapeHtml(tierCfg.name)
+                           : '🎉 Level Up! Level ' + tierCfg.level + ': ' + escapeHtml(tierCfg.name);
+    el.card.innerHTML =
+      '<div class="level-intro">' +
+        '<span class="em">' + tierCfg.emoji + '</span>' +
+        '<h3>' + heading + '</h3>' +
+        '<div class="age-badge">Ages ' + escapeHtml(tierCfg.ageRange) + '</div>' +
+        '<p>' + escapeHtml(tierCfg.tip) + '</p>' +
+        '<div class="meta">Time to read + ' + tierCfg.answerBuffer + 's to answer · base ' + tierCfg.base + ' pts</div>' +
+        '<button class="btn-primary" id="btnBeginLevel" type="button">Start Level →</button>' +
+      '</div>';
+    document.getElementById('btnBeginLevel').addEventListener('click', function(){
+      playLevelUp();
+      beginRound(state.idx);
+    });
+    // Deliberately silent — the narrator only speaks the scene prompt and a short correct-answer
+    // cheer, never a level intro. The level-up text above is still fully visible on screen.
+  }
+
+  function renderRound(item, tierCfg, limit){
+    var cat = CATEGORIES[item.category];
+    el.lvlLabel.innerHTML = 'Level ' + tierCfg.level + ': ' + escapeHtml(tierCfg.name) +
+      ' <span class="num">Scene ' + (state.idx + 1) + ' / ' + state.order.length + '</span>';
+
+    el.card.innerHTML =
+      '<div class="timer-ring" id="timerRing"><span class="secs num" id="timerSecs">' + Math.ceil(limit) + '</span></div>' +
+      '<div class="scene">' +
+        '<div class="cat-pill">' + cat.icon + ' ' + cat.label + '</div>' +
+        '<div class="visual">' + item.visual + '</div>' +
+        '<h3 class="caption">' + escapeHtml(item.caption) + '</h3>' +
+      '</div>' +
+      '<button class="replay-btn" id="btnReplay" type="button" title="Hear this scene again">🔊 Hear it again</button>' +
+      '<div class="decide-row">' +
+        '<button class="decide-btn safe" id="btnSafe" type="button">✅ SAFE<span class="k">Press S</span></button>' +
+        '<button class="decide-btn danger" id="btnDanger" type="button">⚠️ DANGER<span class="k">Press D</span></button>' +
+      '</div>' +
+      '<div class="resolution" id="resolution" hidden></div>';
+
+    document.getElementById('btnSafe').addEventListener('click', function(){ decide('safe', false); });
+    document.getElementById('btnDanger').addEventListener('click', function(){ decide('danger', false); });
+    document.getElementById('btnReplay').addEventListener('click', replaySpeech);
+    renderDots();
+    speak(item.caption + '. Is this safe, or is it danger?', 'prompt');
+  }
+
+  function beginRound(idx){
+    var item = state.order[idx];
+    var tierCfg = TIERS[item.level - 1];
+    state.answered = false;
+    var limit = computeRoundTime(item, tierCfg);
+    state.limit = limit;
+    state.remaining = limit;
+    state.lastTickSec = null;
+    renderRound(item, tierCfg, limit);
+    var ring = document.getElementById('timerRing');
+    if(ring) ring.style.background = 'conic-gradient(var(--safe) 100%, var(--surface-2) 0)';
+    clearTimer();
+    state.timer = setInterval(tickTimer, 100);
+  }
+
+  function startRound(idx){
+    var item = state.order[idx];
+    var tierCfg = TIERS[item.level - 1];
+    if(item.isDanger) state.dangerTotal++; else state.safeTotal++;
+
+    if(state.levelShown !== item.level){
+      state.levelShown = item.level;
+      el.lvlLabel.innerHTML = 'Level ' + tierCfg.level + ': ' + escapeHtml(tierCfg.name) +
+        ' <span class="num">Scene ' + (idx + 1) + ' / ' + state.order.length + '</span>';
+      renderLevelIntro(tierCfg, idx === 0);
+      renderDots();
+    } else {
+      beginRound(idx);
+    }
+  }
+
+  /* ---------------- Deciding ---------------- */
+  function decide(choice, timedOut){
+    if(state.answered) return;
+    state.answered = true;
+    clearTimer();
+
+    var item = state.order[state.idx];
+    var tierCfg = TIERS[item.level - 1];
+    var chosenDanger = choice === 'danger';
+    var isCorrect = !timedOut && (chosenDanger === item.isDanger);
+
+    state.answeredCount++;
+    state.results[state.idx] = isCorrect ? 'correct' : 'wrong';
+
+    var pointsDelta = 0, outcomeClass, outcomeParts = [], streakHype = '', isStreakMoment = false;
+
+    if(isCorrect){
+      state.correct++;
+      var speedBonus = Math.round(tierCfg.base * 0.4 * (state.remaining / state.limit));
+      pointsDelta = tierCfg.base + speedBonus;
+      if(item.isDanger) state.dangerCaught++; else state.safeTrusted++;
+      state.streak++;
+      if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+      outcomeParts.push(pickRandom(CHEER_OPENERS) + ' That was ' + (item.isDanger ? 'DANGER' : 'SAFE') + '.');
+      if(state.streak % 3 === 0){
+        isStreakMoment = true;
+        var streakBonus = 20 * tierCfg.level;
+        pointsDelta += streakBonus;
+        streakHype = pickRandom(STREAK_HYPE_WORDS) + ' ' + state.streak + ' right in a row! +' + streakBonus + ' bonus pts!';
+      }
+      if(state.streak % 5 === 0 && state.lives < LIVES_MAX){
+        state.lives++;
+        outcomeParts.push('❤️ Bonus life restored!');
+      }
+      outcomeClass = 'correct';
+      playCorrect();
+      if(isStreakMoment) playStreak();
+    } else {
+      var penalty = Math.round(tierCfg.base * 0.3);
+      pointsDelta = -penalty;
+      state.streak = 0;
+      state.lives = clamp(state.lives - 1, 0, LIVES_MAX);
+      if(timedOut){
+        outcomeParts.push('Time\'s up! ' + pickRandom(TRY_AGAIN_OPENERS) + ' That one was ' + (item.isDanger ? 'DANGER' : 'SAFE') + '.');
+      } else {
+        outcomeParts.push(pickRandom(TRY_AGAIN_OPENERS) + ' That was actually ' + (item.isDanger ? 'DANGER' : 'SAFE') + '.');
+      }
+      outcomeParts.push('💔 Lost a life (' + state.lives + ' left)');
+      outcomeClass = 'wrong';
+      playWrong();
+    }
+
+    state.score = clamp(state.score + pointsDelta, 0, 999999);
+    renderHeader();
+    renderDots();
+
+    var res = document.getElementById('resolution');
+    res.hidden = false;
+    var tagClass = item.isDanger ? 'danger' : 'safe';
+    var tagText = item.isDanger ? 'DANGER' : 'SAFE';
+    var iconClass = isCorrect ? 'correct' : 'wrong';
+    var bigIcon = isCorrect ? '✅' : '❌';
+    var deltaHtml = '<span class="delta ' + (pointsDelta >= 0 ? 'pos' : 'neg') + '">' + (pointsDelta >= 0 ? '+' : '') + pointsDelta + ' pts</span>';
+    var bonusHtml = outcomeParts.length > 1
+      ? '<div class="bonus-line">' + outcomeParts.slice(1).map(function(p){ return escapeHtml(p); }).join(' · ') + '</div>'
+      : '';
+    var streakHtml = streakHype ? '<div class="streak-hype">🔥 ' + escapeHtml(streakHype) + '</div>' : '';
+
+    var isLastAction = state.lives <= 0 || (state.idx + 1 >= state.order.length);
+
+    res.innerHTML =
+      '<div class="feedback-icon ' + iconClass + '">' + bigIcon + '</div>' +
+      '<div class="verdict-banner ' + outcomeClass + '">' + escapeHtml(outcomeParts[0]) + '</div>' +
+      streakHtml +
+      bonusHtml +
+      '<div class="tag-row"><span class="tag ' + tagClass + '">' + tagText + '</span></div>' +
+      '<p class="feedback-text">' + escapeHtml(item.feedback) + '</p>' +
+      '<div class="delta-row">' + deltaHtml + '</div>' +
+      '<button class="next-btn" id="btnNext" type="button">' +
+        (isLastAction ? 'See My Results →' : 'Next Scene →') +
+      '</button>';
+
+    document.getElementById('btnSafe').disabled = true;
+    document.getElementById('btnDanger').disabled = true;
+    document.getElementById('btnNext').focus();
+    document.getElementById('btnNext').addEventListener('click', advance);
+    // Keep the narrator brief: only a short cheer on a correct answer (the bigger streak word
+    // on a milestone), and total silence on a wrong one — all the explanatory text stays fully
+    // visible on screen, it just isn't read aloud, so the game doesn't talk more than it needs to.
+    if(isCorrect){
+      speak(isStreakMoment ? pickRandom(STREAK_HYPE_WORDS) : pickRandom(SPOKEN_PRAISE), isStreakMoment ? 'streak' : 'celebrate');
+    }
+  }
+
+  function advance(){
+    if(state.lives <= 0){
+      endGame(true);
+      return;
+    }
+    state.idx++;
+    if(state.idx >= state.order.length){
+      endGame(false);
+      return;
+    }
+    startRound(state.idx);
+  }
+
+  /* ---------------- Keyboard shortcuts ---------------- */
+  document.addEventListener('keydown', function(e){
+    if(state.over) return;
+    var safeBtn = document.getElementById('btnSafe');
+    var dangerBtn = document.getElementById('btnDanger');
+    var nextBtn = document.getElementById('btnNext');
+    var key = e.key.toLowerCase();
+    if(nextBtn && (key === 'enter' || key === ' ')){
+      e.preventDefault(); nextBtn.click(); return;
+    }
+    if(safeBtn && !safeBtn.disabled && (key === 's' || key === 'arrowleft')){ safeBtn.click(); return; }
+    if(dangerBtn && !dangerBtn.disabled && (key === 'd' || key === 'arrowright')){ dangerBtn.click(); return; }
+  });
+
+  /* ---------------- End game ---------------- */
+  function computeGrade(){
+    var accuracy = state.answeredCount ? state.correct / state.answeredCount : 0;
+    if(accuracy >= 0.9) return { emoji:'🌟', title:'Safety Superstar!', feedback:`Amazing! You spotted almost every safe and dangerous moment. You really know how to stay safe out there!` };
+    if(accuracy >= 0.75) return { emoji:'🛡️', title:'Safety Star!', feedback:`Really solid! You caught most of the tricky ones. A little more practice and you'll spot them all.` };
+    if(accuracy >= 0.55) return { emoji:'🙂', title:'Getting There!', feedback:`Good try! You've got the easy ones down — keep practicing to spot the sneakier situations too.` };
+    return { emoji:'📚', title:'Keep Practicing!', feedback:`Everyone starts somewhere! Play again to learn more safe and danger signs — you'll get sharper every time.` };
+  }
+
+  function endGame(busted){
+    state.over = true;
+    clearTimer();
+    var grade = computeGrade();
+    var accuracyPct = state.answeredCount ? Math.round((state.correct / state.answeredCount) * 100) : 0;
+    var levelReached = state.levelShown > 0 ? TIERS[state.levelShown - 1] : TIERS[0];
+
+    document.getElementById('endMark').textContent = busted ? '💛' : grade.emoji;
+    document.getElementById('endEmoji').textContent = grade.emoji;
+    document.getElementById('endGradeTitle').textContent = grade.title;
+    document.getElementById('endTitle').textContent = busted ? 'Out of Lives!' : 'Great Game!';
+    document.getElementById('endSubtitle').textContent = busted
+      ? `You ran out of lives — but every scene helps you learn! Here's how you did.`
+      : `You made it through every scene! Here's how your safety skills stack up.`;
+    document.getElementById('endScore').textContent = state.score + ' pts';
+    document.getElementById('endFeedback').textContent = grade.feedback;
+
+    var grid = document.getElementById('endGrid');
+    grid.innerHTML = '';
+    var tiles = [
+      { l:'Final Score', v: state.score },
+      { l:'Level Reached', v: levelReached.emoji + ' ' + levelReached.name + ' (' + levelReached.ageRange + ')' },
+      { l:'Scenes Played', v: state.answeredCount + ' / ' + state.order.length },
+      { l:'Accuracy', v: accuracyPct + '%' },
+      { l:'Danger Spotted', v: state.dangerCaught + ' / ' + state.dangerTotal },
+      { l:'Safe Trusted', v: state.safeTrusted + ' / ' + state.safeTotal },
+      { l:'Best Streak', v: state.bestStreak }
+    ];
+    tiles.forEach(function(t){
+      var d = document.createElement('div');
+      d.className = 'score-tile';
+      d.innerHTML = '<div class="l">' + t.l + '</div><div class="v num">' + t.v + '</div>';
+      grid.appendChild(d);
+    });
+
+    el.endOverlay.hidden = false;
+  }
+
+  /* ---------------- Level select grids ---------------- */
+  // Fills any level-grid container with one card per phase; used both by the first-time
+  // start screen (alongside the rules) and the lighter "Choose a Level" picker (no rules
+  // recap) reached from the end screen.
+  function fillLevelGrid(container){
+    if(!container) return;
+    container.innerHTML = '';
+    TIERS.forEach(function(t){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'level-card';
+      b.title = 'Practice just Level ' + t.level + ': ' + t.name;
+      b.innerHTML =
+        '<span class="em">' + t.emoji + '</span>' +
+        '<span class="nm">Lv ' + t.level + '<br>' + escapeHtml(t.name) + '</span>' +
+        '<span class="age">Ages ' + escapeHtml(t.ageRange) + '</span>';
+      b.addEventListener('click', function(){ launchGame({ onlyLevel: t.level }); });
+      container.appendChild(b);
+    });
+  }
+  fillLevelGrid(el.levelGrid);
+  fillLevelGrid(el.levelGridPicker);
+
+  /* ---------------- Boot ---------------- */
+  var lastGameOpts = null; // remembers full-journey vs single-level, so "Play Again" repeats it
+  function newGame(opts){
+    state = freshState(opts);
+    el.endOverlay.hidden = true;
+    renderHeader();
+    advance();
+  }
+  function launchGame(opts){
+    lastGameOpts = opts || null;
+    ensureAudio();
+    el.startOverlay.hidden = true;
+    el.pickerOverlay.hidden = true;
+    if(musicOn) startMusic();
+    newGame(opts);
+  }
+
+  el.btnStart.addEventListener('click', function(){ launchGame(); });
+  el.btnRestart.addEventListener('click', function(){ newGame(lastGameOpts); });
+  document.getElementById('btnChooseLevel').addEventListener('click', function(){
+    el.endOverlay.hidden = true;
+    el.pickerOverlay.hidden = false; // no rules recap — just the level cards
+  });
+  document.getElementById('btnPlayFullJourney').addEventListener('click', function(){
+    el.pickerOverlay.hidden = true;
+    launchGame();
+  });
+
+  // Initial static state behind the start overlay
+  state = freshState();
+  renderHeader();
+  el.card.innerHTML =
+    '<div class="level-intro">' +
+      '<span class="em">🛡️</span>' +
+      '<h3>Ready when you are.</h3>' +
+      '<p>Press Let\'s Play to see your first scene!</p>' +
+    '</div>';
+})();
+</script>
+</body>
+</html>
